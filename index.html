@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>더베스트 어학원 - 예약 시스템</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
     <style>
-        /* 기존 CSS는 그대로 유지하되, 버튼 부분만 수정합니다 */
         * {
             margin: 0;
             padding: 0;
@@ -112,6 +112,13 @@
             gap: 10px;
         }
         
+        .calendar-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
         .reservation-types {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -151,11 +158,6 @@
             text-decoration: none;
             font-weight: 600;
             transition: background 0.3s;
-            border: none;
-            cursor: pointer;
-            font-size: 1rem;
-            text-align: center;
-            width: 100%;
         }
         
         .reservation-card .btn:hover {
@@ -186,25 +188,32 @@
             border: 3px solid #3498db;
         }
         
-        .teacher-card .btn {
-            display: inline-block;
+        .time-slots {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
             margin-top: 15px;
-            padding: 10px 20px;
-            background: #3498db;
-            color: white;
-            border-radius: 5px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: background 0.3s;
-            border: none;
-            cursor: pointer;
-            font-size: 1rem;
-            text-align: center;
-            width: 100%;
         }
         
-        .teacher-card .btn:hover {
-            background: #2980b9;
+        .time-slot {
+            padding: 10px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .time-slot:hover {
+            background: #e3f2fd;
+            border-color: #3498db;
+        }
+        
+        .time-slot.selected {
+            background: #3498db;
+            color: white;
+            border-color: #2980b9;
         }
         
         footer {
@@ -266,38 +275,33 @@
                 <i class="fas fa-comments"></i> 학부모 상담 예약
             </h2>
             
+            <div class="calendar-container">
+                <div id="consultation-calendar"></div>
+            </div>
+            
             <div class="reservation-types">
-                <!-- 학습 상담 -->
                 <div class="reservation-card">
                     <h3><i class="fas fa-user-graduate"></i> 학습 상담</h3>
                     <p>학생의 학습 진행 상황 및 향후 학습 계획에 대한 상담</p>
                     <p><strong>소요시간:</strong> 30분</p>
                     <p><strong>비용:</strong> 무료</p>
-                    <button class="btn" onclick="window.location.href='reservation.html?type=learning'">
-                        예약하기
-                    </button>
+                    <a href="reservation.html?type=learning" class="btn">예약하기</a>
                 </div>
                 
-                <!-- 레벨테스트 -->
                 <div class="reservation-card">
                     <h3><i class="fas fa-chart-line"></i> 레벨테스트</h3>
                     <p>학생의 영어 레벨 진단 및 반 배정 테스트</p>
                     <p><strong>소요시간:</strong> 60분</p>
                     <p><strong>비용:</strong> 무료</p>
-                    <button class="btn" onclick="window.location.href='reservation.html?type=leveltest'">
-                        예약하기
-                    </button>
+                    <a href="reservation.html?type=leveltest" class="btn">예약하기</a>
                 </div>
                 
-                <!-- 진학 상담 -->
                 <div class="reservation-card">
                     <h3><i class="fas fa-university"></i> 진학 상담</h3>
                     <p>대입/고입을 위한 전략 및 학교 선택 상담</p>
                     <p><strong>소요시간:</strong> 60분</p>
                     <p><strong>비용:</strong> 무료</p>
-                    <button class="btn" onclick="window.location.href='reservation.html?type=admission'">
-                        예약하기
-                    </button>
+                    <a href="reservation.html?type=admission" class="btn">예약하기</a>
                 </div>
             </div>
         </div>
@@ -309,37 +313,46 @@
             </h2>
             
             <div class="teacher-list">
-                <!-- 김영어 강사 -->
                 <div class="teacher-card">
                     <img src="https://via.placeholder.com/100" alt="김영어 강사">
                     <h3>김영어 강사</h3>
                     <p>전문과목: 중등영어, 문법</p>
                     <p>가능 시간: 월-금 16:00-20:00</p>
-                    <button class="btn" onclick="window.location.href='reservation.html?teacher=kim'">
-                        예약하기
-                    </button>
+                    <div class="time-slots">
+                        <div class="time-slot">16:00</div>
+                        <div class="time-slot">17:00</div>
+                        <div class="time-slot">18:00</div>
+                        <div class="time-slot">19:00</div>
+                    </div>
+                    <a href="reservation.html?teacher=kim" class="btn" style="margin-top: 15px;">예약하기</a>
                 </div>
                 
-                <!-- 이회화 강사 -->
                 <div class="teacher-card">
                     <img src="https://via.placeholder.com/100" alt="이회화 강사">
                     <h3>이회화 강사</h3>
                     <p>전문과목: 회화, 스피킹</p>
                     <p>가능 시간: 화-목 14:00-18:00</p>
-                    <button class="btn" onclick="window.location.href='reservation.html?teacher=lee'">
-                        예약하기
-                    </button>
+                    <div class="time-slots">
+                        <div class="time-slot">14:00</div>
+                        <div class="time-slot">15:00</div>
+                        <div class="time-slot">16:00</div>
+                        <div class="time-slot">17:00</div>
+                    </div>
+                    <a href="reservation.html?teacher=lee" class="btn" style="margin-top: 15px;">예약하기</a>
                 </div>
                 
-                <!-- 박작문 강사 -->
                 <div class="teacher-card">
                     <img src="https://via.placeholder.com/100" alt="박작문 강사">
                     <h3>박작문 강사</h3>
                     <p>전문과목: 작문, 에세이</p>
                     <p>가능 시간: 수-금 15:00-19:00</p>
-                    <button class="btn" onclick="window.location.href='reservation.html?teacher=park'">
-                        예약하기
-                    </button>
+                    <div class="time-slots">
+                        <div class="time-slot">15:00</div>
+                        <div class="time-slot">16:00</div>
+                        <div class="time-slot">17:00</div>
+                        <div class="time-slot">18:00</div>
+                    </div>
+                    <a href="reservation.html?teacher=park" class="btn" style="margin-top: 15px;">예약하기</a>
                 </div>
             </div>
         </div>
@@ -351,40 +364,31 @@
             </h2>
             
             <div class="reservation-types">
-                <!-- 스터디룸 A -->
                 <div class="reservation-card">
                     <h3><i class="fas fa-users"></i> 스터디룸 A</h3>
                     <p>소그룹 스터디 및 모임 공간</p>
                     <p><strong>수용인원:</strong> 4-6명</p>
                     <p><strong>비용:</strong> 시간당 5,000원</p>
                     <p><strong>예약가능:</strong> 평일 14:00-21:00</p>
-                    <button class="btn" onclick="window.location.href='reservation.html?facility=studyroom_a'">
-                        예약하기
-                    </button>
+                    <a href="reservation.html?facility=studyroom_a" class="btn">예약하기</a>
                 </div>
                 
-                <!-- 스터디룸 B -->
                 <div class="reservation-card">
                     <h3><i class="fas fa-users"></i> 스터디룸 B</h3>
                     <p>대그룹 스터디 및 세미나</p>
                     <p><strong>수용인원:</strong> 8-12명</p>
                     <p><strong>비용:</strong> 시간당 10,000원</p>
                     <p><strong>예약가능:</strong> 주말 10:00-18:00</p>
-                    <button class="btn" onclick="window.location.href='reservation.html?facility=studyroom_b'">
-                        예약하기
-                    </button>
+                    <a href="reservation.html?facility=studyroom_b" class="btn">예약하기</a>
                 </div>
                 
-                <!-- 독서실 -->
                 <div class="reservation-card">
                     <h3><i class="fas fa-book-reader"></i> 독서실</h3>
                     <p>조용한 자습 공간</p>
                     <p><strong>좌석:</strong> 20석</p>
                     <p><strong>비용:</strong> 무료 (재원생)</p>
                     <p><strong>이용시간:</strong> 매일 08:00-22:00</p>
-                    <button class="btn" onclick="window.location.href='reservation.html?facility=library'">
-                        예약하기
-                    </button>
+                    <a href="reservation.html?facility=library" class="btn">예약하기</a>
                 </div>
             </div>
         </div>
@@ -415,24 +419,59 @@
         <div id="modal-content" style="background: white; padding: 30px; border-radius: 10px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;"></div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/ko.js"></script>
     <script>
-        // 간단한 섹션 전환 함수
+        // 섹션 전환 함수
         function showSection(sectionId) {
-            console.log('섹션 전환:', sectionId);
-            
             // 모든 섹션 숨기기
             document.querySelectorAll('.content-section').forEach(section => {
                 section.classList.remove('active');
             });
             
             // 선택한 섹션 표시
-            const selectedSection = document.getElementById(sectionId);
-            if (selectedSection) {
-                selectedSection.classList.add('active');
-            }
+            document.getElementById(sectionId).classList.add('active');
         }
         
-        // 로그인 모달
+        // 캘린더 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('consultation-calendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'ko',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                events: [
+                    {
+                        title: '상담 가능',
+                        start: new Date(),
+                        color: '#28a745'
+                    },
+                    {
+                        title: '이미 예약됨',
+                        start: '2025-01-10',
+                        color: '#dc3545'
+                    }
+                ],
+                dateClick: function(info) {
+                    alert('날짜 선택: ' + info.dateStr + '\n상담 예약 페이지로 이동합니다.');
+                    window.location.href = 'reservation.html?date=' + info.dateStr;
+                }
+            });
+            calendar.render();
+            
+            // 타임슬롯 선택 이벤트
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                slot.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                });
+            });
+        });
+        
+        // 모달 관련 함수
         function showLoginModal() {
             const modal = document.getElementById('modal');
             const modalContent = document.getElementById('modal-content');
@@ -497,12 +536,6 @@
             if (e.target === this) {
                 closeModal();
             }
-        });
-        
-        // 페이지 로드 시 확인
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('index.html 로드 완료');
-            console.log('모든 예약하기 버튼 준비됨');
         });
     </script>
 </body>
