@@ -6,6 +6,26 @@
     <title>더베스트 어학원 - 예약 시스템</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
+    <!-- Firebase SDK 추가 -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script>
+        // Firebase 구성
+        const firebaseConfig = {
+            apiKey: "AIzaSyD4gK47WmW78znj1jXDzwMSCH6jAN_LVN8",
+            authDomain: "reservation-33a24.firebaseapp.com",
+            projectId: "reservation-33a24",
+            storageBucket: "reservation-33a24.firebasestorage.app",
+            messagingSenderId: "965824309420",
+            appId: "1:965824309420:web:060c37983c1d1c38d59709"
+        };
+        
+        // Firebase 초기화
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
+        console.log('Firebase 초기화 완료');
+    </script>
     <style>
         * {
             margin: 0;
@@ -259,6 +279,9 @@
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/ko.js"></script>
     <script>
+        // 전역 변수
+        let currentUser = null;
+        
         // 섹션 전환 함수
         function showSection(sectionId) {
             // 모든 섹션 숨기기
@@ -268,6 +291,11 @@
             
             // 선택한 섹션 표시
             document.getElementById(sectionId).classList.add('active');
+            
+            // 나의 예약 섹션으로 이동 시 데이터 로드
+            if (sectionId === 'my-reservation') {
+                loadUserReservations();
+            }
         }
         
         // 캘린더 초기화
@@ -300,6 +328,9 @@
                 }
             });
             calendar.render();
+            
+            // Firebase 연결 테스트
+            console.log('Firebase DB 객체:', db ? '✅ 로드됨' : '❌ 없음');
         });
         
         // 모달 관련 함수
@@ -319,7 +350,7 @@
                 </div>
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
                     <button onclick="closeModal()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer;">취소</button>
-                    <button onclick="mockLogin()" style="padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">로그인</button>
+                    <button onclick="userLogin()" style="padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">로그인</button>
                 </div>
             `;
             
@@ -330,31 +361,151 @@
             document.getElementById('modal').style.display = 'none';
         }
         
-        function mockLogin() {
+        // 사용자 로그인 (전화번호 기반)
+        async function userLogin() {
             const name = document.getElementById('login-name').value;
             const phone = document.getElementById('login-phone').value;
             
-            if (name && phone) {
+            if (!name || !phone) {
+                alert('이름과 전화번호를 입력해주세요.');
+                return;
+            }
+            
+            try {
+                // 전화번호로 사용자 찾기 (간단한 구현)
+                currentUser = {
+                    name: name,
+                    phone: phone,
+                    id: phone.replace(/-/g, '')
+                };
+                
+                // localStorage에 저장
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                
                 alert(`${name}님 로그인되었습니다!`);
                 closeModal();
                 
-                // 예약 목록 업데이트 (가상 데이터)
-                document.getElementById('reservation-list').innerHTML = `
-                    <h3 style="margin-bottom: 20px;">나의 예약 (2건)</h3>
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 10px;">
-                        <strong>학습 상담</strong><br>
-                        날짜: 2025년 1월 15일 14:00<br>
-                        상태: 예약확정
-                    </div>
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 5px;">
-                        <strong>학습 상담</strong><br>
-                        날짜: 2025년 1월 20일 16:00<br>
-                        상태: 예약대기
+                // 예약 목록 업데이트
+                await loadUserReservations();
+                
+            } catch (error) {
+                console.error('로그인 오류:', error);
+                alert('로그인 중 오류가 발생했습니다.');
+            }
+        }
+        
+        // 사용자 예약 목록 로드
+        async function loadUserReservations() {
+            const reservationList = document.getElementById('reservation-list');
+            
+            // 로그인 확인
+            const savedUser = localStorage.getItem('currentUser');
+            if (!savedUser) {
+                reservationList.innerHTML = `
+                    <p>로그인 후 예약 내역을 확인할 수 있습니다.</p>
+                    <button onclick="showLoginModal()" class="btn" style="background: #2c3e50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+                        <i class="fas fa-sign-in-alt"></i> 로그인
+                    </button>
+                `;
+                return;
+            }
+            
+            currentUser = JSON.parse(savedUser);
+            
+            try {
+                reservationList.innerHTML = `
+                    <div style="text-align: center; padding: 20px;">
+                        <div class="loader" style="border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+                        <p style="margin-top: 10px;">예약 내역을 불러오는 중...</p>
                     </div>
                 `;
-            } else {
-                alert('이름과 전화번호를 입력해주세요.');
+                
+                // Firestore에서 해당 전화번호의 예약 조회
+                const snapshot = await db.collection('reservations')
+                    .where('parentPhone', '==', currentUser.phone)
+                    .orderBy('createdAt', 'desc')
+                    .get();
+                
+                if (snapshot.empty) {
+                    reservationList.innerHTML = `
+                        <h3 style="margin-bottom: 20px;">나의 예약 (0건)</h3>
+                        <p style="text-align: center; padding: 30px; color: #666;">
+                            <i class="fas fa-calendar-times" style="font-size: 3rem; color: #ddd; margin-bottom: 15px;"></i><br>
+                            아직 예약한 내역이 없습니다.
+                        </p>
+                        <div style="text-align: center; margin-top: 20px;">
+                            <button onclick="window.location.href='reservation.html?type=learning'" 
+                                    style="padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                                <i class="fas fa-plus-circle"></i> 새 예약하기
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let reservationsHtml = `
+                    <h3 style="margin-bottom: 20px;">나의 예약 (${snapshot.size}건)</h3>
+                    <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+                        <button onclick="window.location.href='reservation.html?type=learning'" 
+                                style="padding: 8px 15px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.9rem;">
+                            <i class="fas fa-plus"></i> 새 예약
+                        </button>
+                    </div>
+                `;
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const date = data.createdAt ? data.createdAt.toDate() : new Date();
+                    const statusText = data.status === 'confirmed' ? '확정' : 
+                                     data.status === 'pending' ? '대기중' : 
+                                     data.status === 'cancelled' ? '취소됨' : '완료';
+                    const statusColor = data.status === 'confirmed' ? '#28a745' : 
+                                      data.status === 'pending' ? '#ffc107' : 
+                                      data.status === 'cancelled' ? '#dc3545' : '#6c757d';
+                    
+                    reservationsHtml += `
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 10px; border-left: 4px solid ${statusColor}">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <strong>${data.type === 'learning' ? '학습 상담' : data.type === 'makeup' ? '보강 수업' : '시설 예약'}</strong>
+                                <span style="background: ${statusColor}; color: white; padding: 3px 10px; border-radius: 20px; font-size: 0.85rem;">
+                                    ${statusText}
+                                </span>
+                            </div>
+                            <div style="color: #666; font-size: 0.9rem;">
+                                <div><strong>예약번호:</strong> ${data.reservationId || '없음'}</div>
+                                <div><strong>학생:</strong> ${data.studentName || '없음'}</div>
+                                <div><strong>날짜:</strong> ${data.reservationDate || '없음'} ${data.reservationTime || ''}</div>
+                                <div><strong>예약일:</strong> ${date.toLocaleDateString('ko-KR')}</div>
+                            </div>
+                            ${data.specialRequest ? `<div style="margin-top: 10px; padding: 10px; background: white; border-radius: 3px; font-size: 0.85rem;"><strong>요청사항:</strong> ${data.specialRequest}</div>` : ''}
+                        </div>
+                    `;
+                });
+                
+                reservationList.innerHTML = reservationsHtml;
+                
+            } catch (error) {
+                console.error('예약 목록 로드 오류:', error);
+                reservationList.innerHTML = `
+                    <div style="text-align: center; padding: 30px; color: #dc3545;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 15px;"></i>
+                        <h3>데이터 불러오기 실패</h3>
+                        <p>예약 목록을 불러오는데 실패했습니다.</p>
+                        <p style="font-size: 0.9rem;">오류: ${error.message}</p>
+                        <button onclick="loadUserReservations()" style="margin-top: 15px; padding: 8px 15px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                            다시 시도
+                        </button>
+                    </div>
+                `;
             }
+        }
+        
+        // 로그아웃
+        function logout() {
+            localStorage.removeItem('currentUser');
+            currentUser = null;
+            loadUserReservations();
+            alert('로그아웃되었습니다.');
         }
         
         // 모달 외부 클릭 시 닫기
@@ -363,6 +514,40 @@
                 closeModal();
             }
         });
+        
+        // 페이지 로드 시 로그인 상태 확인
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                console.log('자동 로그인:', currentUser.name);
+            }
+            
+            // Firestore 테스트
+            testFirestoreConnection();
+        });
+        
+        // Firestore 연결 테스트 함수
+        async function testFirestoreConnection() {
+            try {
+                console.log('Firestore 연결 테스트 시작...');
+                
+                // 간단한 읽기 테스트
+                const testSnapshot = await db.collection('reservations').limit(1).get();
+                console.log(`✅ Firestore 연결 성공! 현재 ${testSnapshot.size}개의 예약이 있습니다.`);
+                
+                return true;
+            } catch (error) {
+                console.error('❌ Firestore 연결 실패:', error.message);
+                console.error('에러 코드:', error.code);
+                
+                if (error.code === 'permission-denied') {
+                    console.error('🔥 Firestore 규칙 문제! 쓰기 권한이 필요합니다.');
+                }
+                
+                return false;
+            }
+        }
     </script>
 </body>
 </html>
