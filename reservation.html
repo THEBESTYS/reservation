@@ -269,7 +269,7 @@
         </div>
     </div>
 
-    <!-- Formspree를 위한 숨겨진 폼 (이 부분이 중요!) -->
+    <!-- Formspree를 위한 폼 (iframe으로 제출) -->
     <form id="formspree-form" 
           action="https://formspree.io/f/mbdlnlzl" 
           method="POST"
@@ -281,25 +281,26 @@
         <input type="hidden" name="_replyto" id="formspree-replyto">
         <input type="hidden" name="_language" value="ko">
         <input type="hidden" name="_format" value="plain">
+        <input type="hidden" name="_next" value="#success">
         
-        <!-- 예약 정보 필드 -->
-        <input type="hidden" name="예약번호" id="formspree-reservation-id">
-        <input type="hidden" name="학생이름" id="formspree-student-name">
-        <input type="hidden" name="학생학년" id="formspree-student-grade">
-        <input type="hidden" name="보호자이름" id="formspree-parent-name">
-        <input type="hidden" name="보호자연락처" id="formspree-parent-phone">
-        <input type="hidden" name="이메일" id="formspree-parent-email">
-        <input type="hidden" name="예약날짜" id="formspree-date">
-        <input type="hidden" name="예약시간" id="formspree-time">
-        <input type="hidden" name="연락가능시간" id="formspree-contact-time">
-        <input type="hidden" name="특별요청" id="formspree-special-request">
+        <!-- 예약 정보 필드 (영어 필드명 권장) -->
+        <input type="hidden" name="reservation_id" id="formspree-reservation-id">
+        <input type="hidden" name="student_name" id="formspree-student-name">
+        <input type="hidden" name="student_grade" id="formspree-student-grade">
+        <input type="hidden" name="parent_name" id="formspree-parent-name">
+        <input type="hidden" name="parent_phone" id="formspree-parent-phone">
+        <input type="hidden" name="parent_email" id="formspree-parent-email">
+        <input type="hidden" name="reservation_date" id="formspree-date">
+        <input type="hidden" name="reservation_time" id="formspree-time">
+        <input type="hidden" name="contact_time" id="formspree-contact-time">
+        <input type="hidden" name="special_request" id="formspree-special-request">
         
         <!-- 메시지 필드 -->
-        <input type="hidden" name="message" id="formspree-message">
+        <textarea name="message" id="formspree-message" style="display: none;"></textarea>
     </form>
     
-    <!-- Formspree 폼 제출을 위한 숨겨진 iframe -->
-    <iframe name="formspree-target" style="display: none;"></iframe>
+    <!-- Formspree 폼 제출을 위한 iframe -->
+    <iframe name="formspree-target" id="formspree-iframe" style="display: none;"></iframe>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -347,11 +348,21 @@
             agreeEmail: false
         };
         
+        // Formspree 제출 상태 추적
+        let formspreeSubmitted = false;
+        
         // 페이지 로드 시 초기화
         document.addEventListener('DOMContentLoaded', function() {
             initReservationType();
             initDatePicker();
             initTimeSlots();
+            
+            // Formspree iframe 이벤트 리스너 설정
+            const iframe = document.getElementById('formspree-iframe');
+            iframe.addEventListener('load', function() {
+                console.log('✅ Formspree iframe 로드 완료');
+                formspreeSubmitted = true;
+            });
             
             if (selectedDate) {
                 document.getElementById('datepicker').value = selectedDate;
@@ -598,31 +609,47 @@
             return gradeMap[gradeValue] || gradeValue;
         }
 
-        // ==================== Formspree HTML 폼 전송 함수 ====================
+        // ==================== Formspree HTML 폼 전송 함수 (수정됨) ====================
         function sendFormspreeViaHTMLForm(reservationData, reservationId, docId) {
-            try {
-                console.log('📤 Formspree HTML 폼 전송 시작...');
-                
-                // Formspree 폼 요소 가져오기
-                const form = document.getElementById('formspree-form');
-                
-                // 필드 값 설정 (Formspree가 요구하는 name 속성 사용)
-                document.getElementById('formspree-subject').value = 
-                    `🎯 [더베스트어학원] ${reservationData.studentName}님, 학습 상담 예약 완료!`;
-                document.getElementById('formspree-replyto').value = reservationData.parentEmail;
-                document.getElementById('formspree-reservation-id').value = reservationId;
-                document.getElementById('formspree-student-name').value = reservationData.studentName;
-                document.getElementById('formspree-student-grade').value = getGradeText(reservationData.studentGrade);
-                document.getElementById('formspree-parent-name').value = reservationData.parentName;
-                document.getElementById('formspree-parent-phone').value = reservationData.parentPhone;
-                document.getElementById('formspree-parent-email').value = reservationData.parentEmail;
-                document.getElementById('formspree-date').value = reservationData.date;
-                document.getElementById('formspree-time').value = reservationData.time;
-                document.getElementById('formspree-contact-time').value = reservationData.contactTime || '미지정';
-                document.getElementById('formspree-special-request').value = reservationData.specialRequest || '없음';
-                
-                // 메시지 필드 설정
-                document.getElementById('formspree-message').value = `
+            return new Promise((resolve, reject) => {
+                try {
+                    console.log('📤 Formspree HTML 폼 전송 시작...');
+                    console.log('📧 수신자 이메일:', reservationData.parentEmail);
+                    
+                    // Formspree 폼 요소 가져오기
+                    const form = document.getElementById('formspree-form');
+                    const iframe = document.getElementById('formspree-iframe');
+                    
+                    // iframe 이벤트 리스너 (성공 시)
+                    iframe.onload = function() {
+                        console.log('✅ Formspree iframe 로드 완료 - 폼 제출 성공');
+                        formspreeSubmitted = true;
+                        resolve({ success: true });
+                    };
+                    
+                    // iframe 에러 처리
+                    iframe.onerror = function() {
+                        console.error('❌ Formspree iframe 로드 실패');
+                        reject(new Error('Formspree 폼 제출 실패'));
+                    };
+                    
+                    // 필드 값 설정
+                    document.getElementById('formspree-subject').value = 
+                        `[더베스트어학원] ${reservationData.studentName}님, 학습 상담 예약 완료!`;
+                    document.getElementById('formspree-replyto').value = reservationData.parentEmail;
+                    document.getElementById('formspree-reservation-id').value = reservationId;
+                    document.getElementById('formspree-student-name').value = reservationData.studentName;
+                    document.getElementById('formspree-student-grade').value = getGradeText(reservationData.studentGrade);
+                    document.getElementById('formspree-parent-name').value = reservationData.parentName;
+                    document.getElementById('formspree-parent-phone').value = reservationData.parentPhone;
+                    document.getElementById('formspree-parent-email').value = reservationData.parentEmail;
+                    document.getElementById('formspree-date').value = reservationData.date;
+                    document.getElementById('formspree-time').value = reservationData.time;
+                    document.getElementById('formspree-contact-time').value = reservationData.contactTime || '미지정';
+                    document.getElementById('formspree-special-request').value = reservationData.specialRequest || '없음';
+                    
+                    // 메시지 필드 설정
+                    const messageContent = `
 학생: ${reservationData.studentName} (${getGradeText(reservationData.studentGrade)})
 보호자: ${reservationData.parentName}
 연락처: ${reservationData.parentPhone}
@@ -639,42 +666,33 @@
 주소: 인천 연수구 컨벤시아대로 230번길 42 아라프라자 2층 207-1
 ────────────────────
 이 이메일은 발신전용입니다.
-                `;
-                
-                console.log('📝 Formspree 데이터 설정 완료');
-                console.log('제목:', document.getElementById('formspree-subject').value);
-                console.log('수신자:', reservationData.parentEmail);
-                
-                // 폼 제출
-                form.submit();
-                console.log('✅ Formspree HTML 폼 제출 완료');
-                
-                // Firestore에 로그 저장
-                setTimeout(async () => {
-                    try {
-                        await db.collection('emailLogs').add({
-                            reservationId: reservationId,
-                            docId: docId,
-                            email: reservationData.parentEmail,
-                            sentAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            status: 'form_submitted',
-                            via: 'formspree_html_form',
-                            formId: 'mbdlnlzl'
-                        });
-                        console.log('📝 이메일 로그 저장 완료');
-                    } catch (logError) {
-                        console.warn('⚠️ 로그 저장 실패:', logError);
-                    }
-                }, 1000);
-                
-                return { success: true };
-                
-            } catch (error) {
-                console.error('❌ Formspree HTML 폼 전송 실패:', error);
-                return { success: false, error: error.message };
-            }
+                    `;
+                    
+                    document.getElementById('formspree-message').value = messageContent;
+                    
+                    console.log('📝 Formspree 데이터 설정 완료');
+                    console.log('제목:', document.getElementById('formspree-subject').value);
+                    
+                    // 폼 제출
+                    form.submit();
+                    console.log('✅ Formspree HTML 폼 제출 실행됨');
+                    
+                    // 타임아웃 설정 (5초 후 체크)
+                    setTimeout(() => {
+                        if (formspreeSubmitted) {
+                            resolve({ success: true });
+                        } else {
+                            console.warn('⚠️ Formspree 제출 응답이 지연되고 있습니다');
+                            resolve({ success: true, delayed: true });
+                        }
+                    }, 5000);
+                    
+                } catch (error) {
+                    console.error('❌ Formspree HTML 폼 전송 실패:', error);
+                    reject(error);
+                }
+            });
         }
-        // ==================== Formspree 함수 끝 ====================
         
         // 예약 완료 (Firebase 저장 + Formspree 이메일 포함)
         async function completeReservation() {
@@ -744,9 +762,37 @@
                 // 2. Formspree HTML 폼 방식으로 이메일 발송 (이메일 동의한 경우)
                 let emailResult = { success: false };
                 if (reservationData.agreeEmail) {
-                    console.log('📧 Formspree HTML 폼 방식으로 이메일 발송 시작...');
-                    emailResult = sendFormspreeViaHTMLForm(reservationData, reservationId, docId);
-                    console.log('📧 이메일 발송 결과:', emailResult.success ? '성공' : '실패');
+                    console.log('📧 Formspree 이메일 발송 시작...');
+                    try {
+                        emailResult = await sendFormspreeViaHTMLForm(reservationData, reservationId, docId);
+                        console.log('📧 이메일 발송 결과:', emailResult.success ? '성공' : '실패');
+                        
+                        // Firestore에 로그 저장
+                        await db.collection('emailLogs').add({
+                            reservationId: reservationId,
+                            docId: docId,
+                            email: reservationData.parentEmail,
+                            sentAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            status: emailResult.success ? 'sent' : 'failed',
+                            via: 'formspree',
+                            formId: 'mbdlnlzl'
+                        });
+                        
+                    } catch (emailError) {
+                        console.error('📧 이메일 발송 실패:', emailError);
+                        emailResult = { success: false, error: emailError.message };
+                        
+                        // 실패 로그 저장
+                        await db.collection('emailLogs').add({
+                            reservationId: reservationId,
+                            docId: docId,
+                            email: reservationData.parentEmail,
+                            sentAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            status: 'failed',
+                            error: emailError.message,
+                            via: 'formspree'
+                        });
+                    }
                 }
                 
                 // 3. 성공 모달 표시
@@ -779,6 +825,10 @@
                 localStorage.setItem('academy_reservations', JSON.stringify(reservations));
                 
                 console.log('🎉 예약 프로세스 완료!');
+                
+                // 버튼 상태 복원
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
                 
             } catch (error) {
                 console.error('❌ 예약 처리 실패:', error);
