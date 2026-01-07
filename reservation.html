@@ -319,11 +319,15 @@
         const FORMSPREE_FORM_ID = 'mbdlngyz'; // 새 계정 Form ID
         const FORMSPREE_URL = `https://formspree.io/f/${FORMSPREE_FORM_ID}`;
         
+        // 디버깅 플래그
+        const DEBUG_MODE = true;
+        
         // 페이지 로드 시 초기화
         document.addEventListener('DOMContentLoaded', function() {
             console.log('=== 예약 페이지 로드 완료 ===');
             console.log('Formspree URL:', FORMSPREE_URL);
             console.log('Form ID:', FORMSPREE_FORM_ID);
+            console.log('디버깅 모드:', DEBUG_MODE ? '활성화' : '비활성화');
             
             initReservationType();
             initDatePicker();
@@ -334,7 +338,27 @@
                 reservationData.date = selectedDate;
                 updateTimeSlots();
             }
+            
+            // 네트워크 이벤트 리스너 추가
+            setupNetworkListeners();
         });
+        
+        // 네트워크 이벤트 리스너 설정
+        function setupNetworkListeners() {
+            // fetch 재정의하여 모든 요청 로깅
+            const originalFetch = window.fetch;
+            window.fetch = function(url, options) {
+                console.log(`🌐 Fetch 요청: ${url}`);
+                if (DEBUG_MODE && options && options.body instanceof FormData) {
+                    console.log('📦 FormData 내용:');
+                    for (let [key, value] of options.body.entries()) {
+                        console.log(`  ${key}:`, typeof value === 'string' ? 
+                            (key === 'message' ? value.substring(0, 50) + '...' : value) : value);
+                    }
+                }
+                return originalFetch.apply(this, arguments);
+            };
+        }
         
         // 예약 타입에 따라 UI 업데이트 (간단화)
         function initReservationType() {
@@ -574,74 +598,50 @@
             return gradeMap[gradeValue] || gradeValue;
         }
 
-        // ==================== Formspree 전송 함수 (수정됨) ====================
+        // ==================== FORMPREE 전송 함수 (디버깅 강화) ====================
         async function sendToFormspree(reservationData, reservationId, docId) {
             try {
-                console.log('📤 Formspree 전송 시작...');
-                console.log('📧 수신자:', reservationData.parentEmail);
+                console.log('=== FORMPREE 전송 디버깅 시작 ===');
+                console.log('📧 수신자 이메일:', reservationData.parentEmail);
                 console.log('🔗 Form URL:', FORMSPREE_URL);
+                console.log('📝 예약 데이터:', JSON.stringify(reservationData, null, 2));
                 
                 // FormData 생성
                 const formData = new FormData();
                 
-                // Formspree 필수 필드
+                // Formspree 필수 필드 (매우 간단하게)
                 formData.append('_subject', `[더베스트어학원] ${reservationData.studentName}님 예약 완료`);
                 formData.append('_replyto', reservationData.parentEmail);
-                formData.append('email', reservationData.parentEmail); // 필수 필드
+                formData.append('email', reservationData.parentEmail);
                 formData.append('_language', 'ko');
                 formData.append('_format', 'plain');
                 
-                // 스팸 방지용 honey pot (Formspree 설정에서 활성화해야 함)
+                // 스팸 방지용 honey pot
                 formData.append('_gotcha', '');
                 
-                // 간단하고 명확한 데이터 형식
-                const emailContent = `
-🎯 더베스트 어학원 예약 완료 안내
-
-📋 예약 정보
---------------
-예약번호: ${reservationId}
-예약유형: 학습 상담
+                // 간단한 메시지만 전송 (너무 복잡하면 문제 발생)
+                const simpleMessage = `예약번호: ${reservationId}
+학생: ${reservationData.studentName} (${getGradeText(reservationData.studentGrade)})
 예약일시: ${reservationData.date} ${reservationData.time}
-
-👤 학생 정보
---------------
-학생 이름: ${reservationData.studentName}
-학년: ${getGradeText(reservationData.studentGrade)}
-
-👨‍👩‍👧 보호자 정보
---------------
-보호자 이름: ${reservationData.parentName}
-연락처: ${reservationData.parentPhone}
-이메일: ${reservationData.parentEmail}
-연락 가능 시간: ${reservationData.contactTime || '미지정'}
-
-${reservationData.specialRequest ? `
-📝 특별 요청사항
---------------
-${reservationData.specialRequest}
-` : ''}
-
-────────────────────
-더베스트 어학원
-문의: 032-252-9600
-이메일: gcha2514@naver.com
-주소: 인천 연수구 컨벤시아대로 230번길 42 아라프라자 2층 207-1
-────────────────────
-이 이메일은 발신전용입니다.
-                `;
+보호자: ${reservationData.parentName}
+연락처: ${reservationData.parentPhone}`;
                 
-                formData.append('message', emailContent);
+                formData.append('message', simpleMessage);
                 
                 // 디버깅용 FormData 내용 출력
-                console.log('📝 전송할 데이터:');
+                console.log('📝 전송할 FormData 내용:');
+                const formDataEntries = [];
                 for (let [key, value] of formData.entries()) {
-                    console.log(`  ${key}:`, typeof value === 'string' ? value.substring(0, 100) + (value.length > 100 ? '...' : '') : value);
+                    formDataEntries.push({key, value: value.substring(0, 100)});
+                    console.log(`  ${key}:`, value.substring(0, 100) + (value.length > 100 ? '...' : ''));
                 }
                 
                 // Fetch 요청
                 console.log('🌐 Formspree로 요청 전송중...');
                 const startTime = Date.now();
+                
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10초 타임아웃
                 
                 const response = await fetch(FORMSPREE_URL, {
                     method: 'POST',
@@ -649,16 +649,20 @@ ${reservationData.specialRequest}
                     headers: {
                         'Accept': 'application/json'
                     },
-                    mode: 'cors'
+                    mode: 'cors',
+                    signal: controller.signal
                 });
+                
+                clearTimeout(timeoutId);
                 
                 const endTime = Date.now();
                 console.log(`⏱️ 요청 소요 시간: ${endTime - startTime}ms`);
                 console.log('📨 응답 상태:', response.status, response.statusText);
+                console.log('📋 응답 헤더:', Object.fromEntries(response.headers.entries()));
                 
                 if (response.ok) {
                     const result = await response.json();
-                    console.log('✅ Formspree 전송 성공!');
+                    console.log('✅ Formspree 전송 성공! 응답:', result);
                     
                     // Firestore에 로그 저장
                     try {
@@ -671,7 +675,11 @@ ${reservationData.specialRequest}
                             via: 'formspree',
                             formId: FORMSPREE_FORM_ID,
                             responseStatus: response.status,
-                            timestamp: new Date().toISOString()
+                            timestamp: new Date().toISOString(),
+                            debug: {
+                                formData: formDataEntries,
+                                duration: endTime - startTime
+                            }
                         });
                         console.log('📝 이메일 로그 저장 완료');
                     } catch (logError) {
@@ -683,7 +691,8 @@ ${reservationData.specialRequest}
                     let errorText = '';
                     try {
                         errorText = await response.text();
-                        console.error('❌ Formspree 전송 실패:', errorText.substring(0, 200));
+                        console.error('❌ Formspree 전송 실패 - 상태코드:', response.status);
+                        console.error('❌ 에러 내용:', errorText.substring(0, 500));
                     } catch (e) {
                         console.error('❌ 에러 내용 읽기 실패:', e);
                     }
@@ -699,7 +708,11 @@ ${reservationData.specialRequest}
                             via: 'formspree',
                             formId: FORMSPREE_FORM_ID,
                             responseStatus: response.status,
-                            error: errorText.substring(0, 500)
+                            error: errorText.substring(0, 1000),
+                            debug: {
+                                formData: formDataEntries,
+                                duration: endTime - startTime
+                            }
                         });
                     } catch (logError) {
                         console.warn('⚠️ 실패 로그 저장 실패:', logError);
@@ -707,17 +720,22 @@ ${reservationData.specialRequest}
                     
                     return { 
                         success: false, 
-                        error: `Formspree 전송 실패: ${response.status}`
+                        error: `Formspree 전송 실패: ${response.status}`,
+                        details: errorText.substring(0, 500)
                     };
                 }
                 
             } catch (error) {
                 console.error('❌ Formspree 전송 중 오류:', error);
+                console.error('❌ 오류 스택:', error.stack);
                 
                 return { 
                     success: false, 
-                    error: error.message
+                    error: error.message,
+                    stack: error.stack
                 };
+            } finally {
+                console.log('=== FORMPREE 전송 디버깅 종료 ===');
             }
         }
         
@@ -756,7 +774,7 @@ ${reservationData.specialRequest}
                     new Date().getDate().toString().padStart(2, '0') +
                     Math.floor(Math.random() * 1000).toString().padStart(3, '0');
                 
-                console.log('📝 예약 데이터:', reservationData);
+                console.log('📝 예약 데이터:', JSON.stringify(reservationData, null, 2));
                 console.log('🔢 생성된 예약번호:', reservationId);
                 
                 // Firestore에 저장할 데이터
@@ -795,7 +813,17 @@ ${reservationData.specialRequest}
                     console.log('📧 이메일 발송 결과:', emailResult.success ? '성공' : '실패');
                     
                     if (!emailResult.success) {
-                        console.warn('⚠️ 이메일 발송 실패, 하지만 예약은 완료됨:', emailResult.error);
+                        console.warn('⚠️ 이메일 발송 실패:', emailResult.error);
+                        // 실패 로그 추가 저장
+                        try {
+                            await db.collection('reservations').doc(docId).update({
+                                emailSent: false,
+                                emailError: emailResult.error,
+                                emailSentAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                        } catch (updateError) {
+                            console.warn('⚠️ 실패 상태 업데이트 실패:', updateError);
+                        }
                     }
                 } else {
                     console.log('📧 이메일 알림 수신 미동의 - 이메일 미발송');
@@ -816,6 +844,9 @@ ${reservationData.specialRequest}
                     document.getElementById('email-sent-notice').style.display = 'block';
                     document.getElementById('email-sent-notice').innerHTML = 
                         '<i class="fas fa-envelope"></i> 확인 이메일이 발송되었습니다. (스팸함도 확인해주세요)';
+                } else if (emailResult.error) {
+                    // 이메일 실패했지만 사용자에게는 보내졌다고 표시
+                    console.log('⚠️ 이메일 발송 실패했지만 예약은 완료됨');
                 }
                 
                 document.getElementById('success-modal').style.display = 'flex';
@@ -827,7 +858,8 @@ ${reservationData.specialRequest}
                     docId: docId,
                     formspreeFormId: FORMSPREE_FORM_ID,
                     createdAt: new Date().toLocaleString('ko-KR'),
-                    emailSent: emailResult.success
+                    emailSent: emailResult.success,
+                    emailError: emailResult.error || null
                 };
                 
                 const reservations = JSON.parse(localStorage.getItem('academy_reservations') || '[]');
@@ -835,12 +867,15 @@ ${reservationData.specialRequest}
                 localStorage.setItem('academy_reservations', JSON.stringify(reservations));
                 
                 console.log('🎉 예약 프로세스 완료!');
+                console.log('🔍 Network 탭에서 Formspree 요청 확인하세요');
+                console.log('📋 Formspree 대시보드에서 제출 확인하세요: https://formspree.io/forms/' + FORMSPREE_FORM_ID + '/submissions');
                 
             } catch (error) {
                 console.error('❌ 예약 처리 실패:', error);
+                console.error('❌ 오류 스택:', error.stack);
                 
                 // 오류 메시지 표시
-                alert(`예약 처리 중 오류가 발생했습니다: ${error.message}\n\n계속 문제가 발생하면 고객센터(032-252-9600)로 문의해주세요.`);
+                alert(`예약 처리 중 오류가 발생했습니다:\n\n${error.message}\n\n계속 문제가 발생하면 고객센터(032-252-9600)로 문의해주세요.`);
                 
             } finally {
                 // 버튼 상태 복원
@@ -866,41 +901,65 @@ ${reservationData.specialRequest}
         }
         
         // 테스트 함수 - 브라우저 콘솔에서 실행
-        window.testFormspree = async function() {
-            console.log('=== Formspree 테스트 시작 ===');
+        window.testFormspreeConnection = async function() {
+            console.log('=== FORMPREE 연결 테스트 시작 ===');
             console.log('Form ID:', FORMSPREE_FORM_ID);
+            console.log('Form URL:', FORMSPREE_URL);
             
             const testEmail = prompt('테스트 이메일 입력:', 'test@gmail.com');
             if (!testEmail) return;
             
-            const formData = new FormData();
-            formData.append('_subject', 'Formspree 연결 테스트');
-            formData.append('_replyto', testEmail);
-            formData.append('email', testEmail);
-            formData.append('message', '이 메시지가 Formspree로 전송되는지 테스트합니다.');
+            const testData = new FormData();
+            testData.append('_subject', 'Formspree 연결 테스트');
+            testData.append('_replyto', testEmail);
+            testData.append('email', testEmail);
+            testData.append('_language', 'ko');
+            testData.append('message', 'Formspree 연결 테스트 메시지\n시간: ' + new Date().toLocaleString());
+            
+            console.log('📤 테스트 데이터 전송...');
             
             try {
                 const response = await fetch(FORMSPREE_URL, {
                     method: 'POST',
-                    body: formData
+                    body: testData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
                 });
                 
-                console.log('응답 상태:', response.status);
+                console.log('📨 응답 상태:', response.status, response.statusText);
+                console.log('📋 응답 헤더:', Object.fromEntries(response.headers.entries()));
                 
                 if (response.ok) {
-                    alert('✅ 테스트 성공! Formspree 대시보드에서 확인하세요.');
-                    console.log('성공 응답:', await response.json());
+                    const result = await response.json();
+                    console.log('✅ 테스트 성공! 응답:', result);
+                    alert('✅ 테스트 성공!\nFormspree 대시보드에서 제출을 확인하세요.\n이메일도 확인해보세요.');
                 } else {
-                    alert('❌ 테스트 실패: 상태코드 ' + response.status);
-                    console.error('실패:', await response.text());
+                    const errorText = await response.text();
+                    console.error('❌ 테스트 실패:', errorText.substring(0, 500));
+                    alert('❌ 테스트 실패: 상태코드 ' + response.status + '\n콘솔에서 상세 내용 확인');
                 }
             } catch (error) {
-                console.error('에러:', error);
-                alert('❌ 에러: ' + error.message);
+                console.error('❌ 테스트 중 오류:', error);
+                alert('❌ 테스트 중 오류: ' + error.message);
             }
+            
+            console.log('=== FORMPREE 연결 테스트 종료 ===');
         };
         
-        // URL 복사 함수 (성공 모달에 추가 가능)
+        // 직접 Formspree 요청 보기
+        window.showFormspreeRequest = function() {
+            console.log('🔍 Formspree 요청 확인 방법:');
+            console.log('1. F12 개발자 도구 열기');
+            console.log('2. Network 탭 선택');
+            console.log('3. "Fetch/XHR" 필터 적용');
+            console.log('4. 예약 완료 버튼 클릭');
+            console.log('5. formspree.io 요청 찾아서 클릭');
+            console.log('6. "Headers" 탭에서 요청 확인');
+            console.log('7. "Response" 탭에서 응답 확인');
+        };
+        
+        // URL 복사 함수
         function copyReservationDetails() {
             const reservationId = document.getElementById('success-message').querySelector('strong').textContent.replace('예약번호: ', '');
             const textToCopy = `더베스트 어학원 예약번호: ${reservationId}\n고객센터: 032-252-9600`;
