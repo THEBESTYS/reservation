@@ -269,6 +269,38 @@
         </div>
     </div>
 
+    <!-- Formspree를 위한 숨겨진 폼 (이 부분이 중요!) -->
+    <form id="formspree-form" 
+          action="https://formspree.io/f/mbdlnlzl" 
+          method="POST"
+          target="formspree-target"
+          style="display: none;">
+        
+        <!-- Formspree 필수 필드 -->
+        <input type="hidden" name="_subject" id="formspree-subject">
+        <input type="hidden" name="_replyto" id="formspree-replyto">
+        <input type="hidden" name="_language" value="ko">
+        <input type="hidden" name="_format" value="plain">
+        
+        <!-- 예약 정보 필드 -->
+        <input type="hidden" name="예약번호" id="formspree-reservation-id">
+        <input type="hidden" name="학생이름" id="formspree-student-name">
+        <input type="hidden" name="학생학년" id="formspree-student-grade">
+        <input type="hidden" name="보호자이름" id="formspree-parent-name">
+        <input type="hidden" name="보호자연락처" id="formspree-parent-phone">
+        <input type="hidden" name="이메일" id="formspree-parent-email">
+        <input type="hidden" name="예약날짜" id="formspree-date">
+        <input type="hidden" name="예약시간" id="formspree-time">
+        <input type="hidden" name="연락가능시간" id="formspree-contact-time">
+        <input type="hidden" name="특별요청" id="formspree-special-request">
+        
+        <!-- 메시지 필드 -->
+        <input type="hidden" name="message" id="formspree-message">
+    </form>
+    
+    <!-- Formspree 폼 제출을 위한 숨겨진 iframe -->
+    <iframe name="formspree-target" style="display: none;"></iframe>
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
@@ -278,7 +310,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     
     <script>
-        // Firebase 구성 (여러분의 실제 Firebase 설정으로 변경하세요)
+        // Firebase 구성
         const firebaseConfig = {
             apiKey: "AIzaSyD4gK47WmW78znj1jXDzwMSCH6jAN_LVN8",
             authDomain: "reservation-33a24.firebasestorage.app",
@@ -566,122 +598,79 @@
             return gradeMap[gradeValue] || gradeValue;
         }
 
-        // ==================== Formspree 이메일 함수 ====================
-        async function sendFormspreeNotification(reservationData, reservationId, docId) {
-            const FORMSPREE_FORM_ID = 'mbdlnlzl'; // 여러분의 Formspree ID
-            const FORMSPREE_ENDPOINT = `https://formspree.io/f/${FORMSPREE_FORM_ID}`;
-            
-            const emailData = {
-                _subject: `🎯 [더베스트어학원] ${reservationData.studentName}님, 학습 상담 예약 완료!`,
-                _replyto: reservationData.parentEmail,
-                
-                // Formspree 필드들
-                '예약번호': reservationId,
-                '학생이름': reservationData.studentName,
-                '학생학년': getGradeText(reservationData.studentGrade),
-                '보호자이름': reservationData.parentName,
-                '보호자연락처': reservationData.parentPhone,
-                '보호자이메일': reservationData.parentEmail,
-                '상담유형': '학습 상담',
-                '상담날짜': reservationData.date,
-                '상담시간': reservationData.time,
-                '연락가능시간': reservationData.contactTime || '미지정',
-                '특별요청': reservationData.specialRequest || '없음',
-                '예약일시': new Date().toLocaleString('ko-KR'),
-                '문서ID': docId,
-                
-                // HTML 메시지
-                'message': `
-<div style="font-family: 'Malgun Gothic', sans-serif; max-width: 600px; margin: auto; background: #f8f9fa; padding: 20px;">
-    <div style="background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-        <h1 style="margin: 0; font-size: 24px;">더베스트 어학원</h1>
-        <p style="margin: 10px 0 0; opacity: 0.9; font-size: 16px;">학습 상담 예약 확인</p>
-    </div>
-    
-    <div style="padding: 30px; background: white;">
-        <h2 style="color: #2c3e50; margin-bottom: 20px;">${reservationData.parentName}님, 학습 상담 예약이 완료되었습니다!</h2>
-        
-        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3498db;">
-            <h3 style="color: #3498db; margin-top: 0;">📚 예약 정보</h3>
-            <p><strong>예약번호:</strong> ${reservationId}</p>
-            <p><strong>학생이름:</strong> ${reservationData.studentName} (${getGradeText(reservationData.studentGrade)})</p>
-            <p><strong>보호자이름:</strong> ${reservationData.parentName}</p>
-            <p><strong>보호자연락처:</strong> ${reservationData.parentPhone}</p>
-            <p><strong>상담유형:</strong> 학습 상담</p>
-            <p><strong>상담날짜:</strong> ${reservationData.date}</p>
-            <p><strong>상담시간:</strong> ${reservationData.time}</p>
-            <p><strong>연락가능시간:</strong> ${reservationData.contactTime || '미지정'}</p>
-            ${reservationData.specialRequest ? `<p><strong>특별요청:</strong> ${reservationData.specialRequest}</p>` : ''}
-        </div>
-        
-        <div style="background: #fff8e1; padding: 15px; border-radius: 5px; border: 1px solid #ffd54f; margin: 20px 0;">
-            <h4 style="color: #ff9800; margin-top: 0;">📌 안내사항</h4>
-            <ul style="color: #555; margin: 0; padding-left: 20px;">
-                <li>상담 30분 전까지 담당 선생님께서 연락드립니다</li>
-                <li>변경/취소는 상담 24시간 전까지 가능합니다</li>
-                <li>상담 당일 10분 전까지 도착해주시기 바랍니다</li>
-                <li>추가 문의: 032-252-9600 (gcha2514@naver.com)</li>
-            </ul>
-        </div>
-        
-        <div style="text-align: center; margin: 30px 0;">
-            <a href="https://thebestys.github.io/reservation/adminreservation.html" 
-               style="background: #3498db; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; font-size: 16px;">
-                예약 내역 확인하기
-            </a>
-        </div>
-    </div>
-    
-    <div style="text-align: center; color: #666; font-size: 12px; padding: 20px; border-top: 1px solid #eee; background: white;">
-        <p>인천 연수구 컨벤시아대로 230번길 42 아라프라자 2층 207-1 더베스트 어학원</p>
-        <p>고객센터: 032-252-9600 | 이메일: gcha2514@naver.com</p>
-        <p style="color: #999; margin-top: 10px;">이 이메일은 발신전용입니다.</p>
-    </div>
-</div>
-                `
-            };
-            
+        // ==================== Formspree HTML 폼 전송 함수 ====================
+        function sendFormspreeViaHTMLForm(reservationData, reservationId, docId) {
             try {
-                console.log('📤 Formspree 이메일 발송 시도...');
+                console.log('📤 Formspree HTML 폼 전송 시작...');
                 
-                const response = await fetch(FORMSPREE_ENDPOINT, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(emailData)
-                });
+                // Formspree 폼 요소 가져오기
+                const form = document.getElementById('formspree-form');
                 
-                const result = await response.json();
+                // 필드 값 설정 (Formspree가 요구하는 name 속성 사용)
+                document.getElementById('formspree-subject').value = 
+                    `🎯 [더베스트어학원] ${reservationData.studentName}님, 학습 상담 예약 완료!`;
+                document.getElementById('formspree-replyto').value = reservationData.parentEmail;
+                document.getElementById('formspree-reservation-id').value = reservationId;
+                document.getElementById('formspree-student-name').value = reservationData.studentName;
+                document.getElementById('formspree-student-grade').value = getGradeText(reservationData.studentGrade);
+                document.getElementById('formspree-parent-name').value = reservationData.parentName;
+                document.getElementById('formspree-parent-phone').value = reservationData.parentPhone;
+                document.getElementById('formspree-parent-email').value = reservationData.parentEmail;
+                document.getElementById('formspree-date').value = reservationData.date;
+                document.getElementById('formspree-time').value = reservationData.time;
+                document.getElementById('formspree-contact-time').value = reservationData.contactTime || '미지정';
+                document.getElementById('formspree-special-request').value = reservationData.specialRequest || '없음';
                 
-                if (response.ok) {
-                    console.log('✅ Formspree 이메일 발송 성공:', result);
-                    
-                    // Firestore에 로그 저장
+                // 메시지 필드 설정
+                document.getElementById('formspree-message').value = `
+학생: ${reservationData.studentName} (${getGradeText(reservationData.studentGrade)})
+보호자: ${reservationData.parentName}
+연락처: ${reservationData.parentPhone}
+이메일: ${reservationData.parentEmail}
+예약번호: ${reservationId}
+예약일시: ${reservationData.date} ${reservationData.time}
+연락가능시간: ${reservationData.contactTime || '미지정'}
+특별요청: ${reservationData.specialRequest || '없음'}
+
+────────────────────
+더베스트 어학원
+문의: 032-252-9600
+이메일: gcha2514@naver.com
+주소: 인천 연수구 컨벤시아대로 230번길 42 아라프라자 2층 207-1
+────────────────────
+이 이메일은 발신전용입니다.
+                `;
+                
+                console.log('📝 Formspree 데이터 설정 완료');
+                console.log('제목:', document.getElementById('formspree-subject').value);
+                console.log('수신자:', reservationData.parentEmail);
+                
+                // 폼 제출
+                form.submit();
+                console.log('✅ Formspree HTML 폼 제출 완료');
+                
+                // Firestore에 로그 저장
+                setTimeout(async () => {
                     try {
                         await db.collection('emailLogs').add({
                             reservationId: reservationId,
                             docId: docId,
                             email: reservationData.parentEmail,
                             sentAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            status: 'sent',
-                            via: 'formspree',
-                            formId: FORMSPREE_FORM_ID
+                            status: 'form_submitted',
+                            via: 'formspree_html_form',
+                            formId: 'mbdlnlzl'
                         });
                         console.log('📝 이메일 로그 저장 완료');
                     } catch (logError) {
                         console.warn('⚠️ 로그 저장 실패:', logError);
                     }
-                    
-                    return { success: true };
-                } else {
-                    console.warn('⚠️ Formspree 응답 오류:', result);
-                    return { success: false, error: result.error };
-                }
+                }, 1000);
+                
+                return { success: true };
                 
             } catch (error) {
-                console.error('❌ Formspree 이메일 발송 실패:', error);
+                console.error('❌ Formspree HTML 폼 전송 실패:', error);
                 return { success: false, error: error.message };
             }
         }
@@ -752,11 +741,11 @@
                 const docId = docRef.id;
                 console.log('✅ Firestore 저장 성공! 문서 ID:', docId);
                 
-                // 2. Formspree 이메일 발송 (이메일 동의한 경우)
+                // 2. Formspree HTML 폼 방식으로 이메일 발송 (이메일 동의한 경우)
                 let emailResult = { success: false };
                 if (reservationData.agreeEmail) {
-                    console.log('📧 Formspree 이메일 발송 시작...');
-                    emailResult = await sendFormspreeNotification(reservationData, reservationId, docId);
+                    console.log('📧 Formspree HTML 폼 방식으로 이메일 발송 시작...');
+                    emailResult = sendFormspreeViaHTMLForm(reservationData, reservationId, docId);
                     console.log('📧 이메일 발송 결과:', emailResult.success ? '성공' : '실패');
                 }
                 
@@ -798,47 +787,40 @@
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
                 
-                let errorMessage = '예약 처리 중 오류가 발생했습니다.';
-                
-                if (error.code === 'permission-denied') {
-                    errorMessage = 'Firestore 쓰기 권한이 없습니다. Firebase 콘솔에서 Firestore 규칙을 확인하세요.';
-                } else if (error.message.includes('network')) {
-                    errorMessage = '네트워크 연결에 실패했습니다. 인터넷 연결을 확인해주세요.';
-                }
-                
-                alert(errorMessage + '\n\n에러 상세: ' + error.message);
+                // 오류 메시지 표시
+                alert(`예약 처리 중 오류가 발생했습니다: ${error.message}\n\n계속 문제가 발생하면 고객센터(032-252-9600)로 문의해주세요.`);
             }
         }
         
-        // 예약 취소
+        // 취소 함수
         function cancelReservation() {
-            if (confirm('예약을 취소하시겠습니까? 입력한 내용은 저장되지 않습니다.')) {
+            if (confirm('예약을 취소하고 메인 페이지로 이동하시겠습니까?\n입력한 내용은 저장되지 않습니다.')) {
                 window.location.href = 'index.html';
             }
         }
         
-        // 성공 모달 후 액션
+        // 성공 모달 관련 함수
         function goToHome() {
             window.location.href = 'index.html';
         }
         
         function viewMyReservations() {
-            window.location.href = 'index.html#my-reservation';
+            window.location.href = 'my_reservations.html';
         }
         
-        // ESC 키로 모달 닫기
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                document.getElementById('success-modal').style.display = 'none';
-            }
-        });
-        
-        // 모달 외부 클릭 시 닫기
-        document.getElementById('success-modal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                this.style.display = 'none';
-            }
-        });
+        // URL 복사 함수 (성공 모달에 추가 가능)
+        function copyReservationDetails() {
+            const reservationId = document.getElementById('success-message').querySelector('strong').textContent.replace('예약번호: ', '');
+            const textToCopy = `더베스트 어학원 예약번호: ${reservationId}\n고객센터: 032-252-9600`;
+            
+            navigator.clipboard.writeText(textToCopy)
+                .then(() => {
+                    alert('예약번호가 클립보드에 복사되었습니다.');
+                })
+                .catch(err => {
+                    console.error('복사 실패:', err);
+                });
+        }
     </script>
 </body>
 </html>
