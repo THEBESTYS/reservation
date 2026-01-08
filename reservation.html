@@ -6,6 +6,11 @@
     <title>더베스트 어학원 - 예약하기</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
     <style>
         /* 전체 스타일 */
         * {
@@ -550,7 +555,22 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
     
     <script>
-        // ==================== CONFIGURATION ====================
+        // ==================== FIREBASE CONFIGURATION ====================
+        const firebaseConfig = {
+            apiKey: "AIzaSyD4gK47WmW78znj1jXDzwMSCH6jAN_LVN8",
+            authDomain: "reservation-33a24.firebaseapp.com",
+            projectId: "reservation-33a24",
+            storageBucket: "reservation-33a24.firebasestorage.app",
+            messagingSenderId: "965824309420",
+            appId: "1:965824309420:web:060c37983c1d1c38d59709"
+        };
+
+        // Firebase 초기화
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        console.log('Firebase 초기화 완료');
+        
+        // ==================== GAS CONFIGURATION ====================
         const GAS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzS3z0Fssp7RzGt-x52RVHshb_OMlr2Qhu-ifDSkUf1Dok20sVKRkIo1AsZ0hbbF2S4/exec';
         
         // ==================== GLOBAL VARIABLES ====================
@@ -571,6 +591,7 @@
         // ==================== INITIALIZATION ====================
         document.addEventListener('DOMContentLoaded', function() {
             console.log('더베스트 어학원 예약 시스템 로드됨');
+            console.log('Firebase 프로젝트:', firebaseConfig.projectId);
             console.log('GAS 웹앱 URL:', GAS_WEBAPP_URL);
             
             initDatePicker();
@@ -832,7 +853,32 @@
                 console.log('📝 예약 데이터:', reservationData);
                 console.log('🔢 예약번호:', reservationId);
                 
-                // GAS로 데이터 전송
+                // 1. Firebase에 예약 데이터 저장
+                const firestoreData = {
+                    serviceType: '학습 상담',
+                    studentName: reservationData.studentName,
+                    studentGrade: reservationData.studentGrade,
+                    parentName: reservationData.parentName,
+                    parentPhone: reservationData.parentPhone,
+                    parentEmail: reservationData.parentEmail,
+                    reservationDate: reservationData.date,
+                    reservationTime: reservationData.time,
+                    specialRequest: reservationData.specialRequest || '',
+                    contactTime: reservationData.contactTime || '',
+                    reservationId: reservationId,
+                    status: '대기중',
+                    agreeTerms: reservationData.agreeTerms,
+                    agreeEmail: reservationData.agreeEmail,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                console.log('🔥 Firebase 저장 시작...');
+                const docRef = await db.collection('reservations').add(firestoreData);
+                const docId = docRef.id;
+                console.log('✅ Firebase 저장 성공! 문서 ID:', docId);
+                
+                // 2. GAS로 이메일 발송 요청
                 const gasData = {
                     parent_email: reservationData.parentEmail,
                     student_name: reservationData.studentName,
@@ -876,6 +922,13 @@
                     
                     document.getElementById('email-sent-notice').style.display = 'block';
                     document.getElementById('success-modal').style.display = 'flex';
+                    
+                    // Firebase에 이메일 발송 상태 업데이트
+                    await db.collection('reservations').doc(docId).update({
+                        emailSent: true,
+                        emailSentAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        emailResult: result
+                    });
                     
                 } else {
                     throw new Error(result.error || '이메일 발송 실패');
@@ -929,7 +982,7 @@
             }
         }
         
-        // ==================== TEST FUNCTION ====================
+        // ==================== TEST FUNCTIONS ====================
         function testGASConnection() {
             console.log('🔗 GAS 연결 테스트 시작');
             
@@ -942,6 +995,27 @@
                 .catch(error => {
                     console.error('❌ GAS 연결 테스트 실패:', error);
                     alert('GAS 연결 테스트 실패: ' + error.message);
+                });
+        }
+        
+        function testFirebaseConnection() {
+            console.log('🔥 Firebase 연결 테스트 시작');
+            
+            // 간단한 테스트 데이터 저장
+            const testData = {
+                test: true,
+                message: 'Firebase 연결 테스트',
+                timestamp: new Date().toISOString()
+            };
+            
+            db.collection('test').add(testData)
+                .then(docRef => {
+                    console.log('✅ Firebase 저장 성공! 문서 ID:', docRef.id);
+                    alert('Firebase 연결 테스트 성공!\n문서 ID: ' + docRef.id);
+                })
+                .catch(error => {
+                    console.error('❌ Firebase 연결 테스트 실패:', error);
+                    alert('Firebase 연결 테스트 실패: ' + error.message);
                 });
         }
     </script>
