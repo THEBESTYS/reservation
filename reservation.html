@@ -12,7 +12,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     
     <style>
-        /* 전체 스타일 */
+        /* 기존 스타일 유지 */
         * {
             margin: 0;
             padding: 0;
@@ -39,7 +39,6 @@
             border-radius: 10px;
             margin-bottom: 30px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            position: relative;
         }
         
         .logo {
@@ -57,38 +56,12 @@
             border-radius: 50%;
         }
         
-        .logo h1 {
-            font-size: 1.8rem;
-            margin-bottom: 5px;
-        }
-        
-        .logo p {
-            opacity: 0.9;
-            font-size: 0.95rem;
-        }
-        
         .reservation-container {
             background: white;
             border-radius: 10px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.08);
             overflow: hidden;
             margin-bottom: 30px;
-        }
-        
-        .reservation-header {
-            background: linear-gradient(to right, #4a6fa5, #6a9bd8);
-            color: white;
-            padding: 25px 30px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        
-        .reservation-icon {
-            font-size: 2.5rem;
-            background: rgba(255,255,255,0.2);
-            padding: 15px;
-            border-radius: 50%;
         }
         
         .step-indicator {
@@ -108,33 +81,9 @@
             flex: 1;
         }
         
-        .step:not(:last-child)::after {
-            content: '';
-            position: absolute;
-            top: 20px;
-            left: 60%;
-            width: 100%;
-            height: 2px;
-            background: #ddd;
-            z-index: 1;
-        }
-        
         .step.active .step-number {
             background: #007bff;
             color: white;
-        }
-        
-        .step .step-number {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #ddd;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            position: relative;
-            z-index: 2;
         }
         
         .step-content {
@@ -146,36 +95,8 @@
             display: block;
         }
         
-        .alert {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-        }
-        
-        .alert-info {
-            background: #e3f2fd;
-            color: #0c5460;
-            border-left: 4px solid #3498db;
-        }
-        
-        .alert-warning {
-            background: #fff3cd;
-            color: #856404;
-            border-left: 4px solid #ffc107;
-        }
-        
         .form-group {
             margin-bottom: 25px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #2c3e50;
         }
         
         .form-group label.required::after {
@@ -218,22 +139,10 @@
             font-weight: 500;
         }
         
-        .time-slot:hover:not(.unavailable) {
-            border-color: #3498db;
-            background: #f0f8ff;
-        }
-        
         .time-slot.selected {
             background: #3498db;
             color: white;
             border-color: #3498db;
-        }
-        
-        .time-slot.unavailable {
-            background: #f5f5f5;
-            color: #999;
-            cursor: not-allowed;
-            text-decoration: line-through;
         }
         
         .button-group {
@@ -262,30 +171,9 @@
             color: white;
         }
         
-        .btn-primary:hover {
-            background: #2980b9;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 10px rgba(52, 152, 219, 0.3);
-        }
-        
-        .btn-secondary {
-            background: #95a5a6;
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            background: #7f8c8d;
-        }
-        
         .btn-success {
             background: #2ecc71;
             color: white;
-        }
-        
-        .btn-success:hover {
-            background: #27ae60;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 10px rgba(46, 204, 113, 0.3);
         }
         
         .btn-danger {
@@ -293,62 +181,11 @@
             color: white;
         }
         
-        .btn-danger:hover {
-            background: #c0392b;
-        }
-        
-        .terms-box {
-            background: #f8f9fa;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 15px;
-            max-height: 200px;
-            overflow-y: auto;
-            margin-bottom: 15px;
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-        
-        .reservation-summary {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 25px;
-        }
-        
-        footer {
-            text-align: center;
-            padding: 20px;
-            color: #666;
-            font-size: 0.9rem;
-            line-height: 1.6;
-            border-top: 1px solid #eee;
-            margin-top: 30px;
-        }
-        
-        /* 로딩 스피너 */
-        .spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
+        /* 반응형 디자인 */
         @media (max-width: 768px) {
             .step-indicator {
                 flex-direction: column;
                 gap: 15px;
-            }
-            
-            .step:not(:last-child)::after {
-                display: none;
             }
             
             .button-group {
@@ -357,11 +194,6 @@
             
             .btn {
                 width: 100%;
-                text-align: center;
-            }
-            
-            .time-slots-grid {
-                grid-template-columns: repeat(3, 1fr);
             }
         }
     </style>
@@ -379,15 +211,6 @@
         </header>
         
         <div class="reservation-container">
-            <div class="reservation-header">
-                <i class="fas fa-comments reservation-icon"></i>
-                <div>
-                    <h2>학습 상담 예약</h2>
-                    <p>학생의 학습 진행 상황 및 향후 학습 계획에 대한 상담</p>
-                </div>
-            </div>
-            
-            <!-- 단계 표시기 -->
             <div class="step-indicator">
                 <div class="step active" id="step1-indicator">
                     <div class="step-number">1</div>
@@ -405,13 +228,6 @@
             
             <!-- 단계 1: 날짜/시간 선택 -->
             <div id="step1" class="step-content active">
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i>
-                    <div>
-                        <strong>예약 안내:</strong> 원하시는 날짜와 시간을 선택해주세요.
-                    </div>
-                </div>
-                
                 <div class="form-group">
                     <label class="required">예약 날짜 선택</label>
                     <input type="text" id="datepicker" placeholder="날짜를 선택해주세요" readonly>
@@ -419,12 +235,7 @@
                 
                 <div class="form-group">
                     <label class="required">예약 시간 선택</label>
-                    <div class="time-slots-grid" id="time-slots">
-                        <!-- 시간 슬롯 동적 생성 -->
-                    </div>
-                    <div id="selected-time-display" style="margin-top: 15px; padding: 10px; background: #e3f2fd; border-radius: 5px; display: none;">
-                        선택한 시간: <span id="selected-time-text"></span>
-                    </div>
+                    <div class="time-slots-grid" id="time-slots"></div>
                 </div>
                 
                 <div class="form-group">
@@ -433,20 +244,12 @@
                 </div>
                 
                 <div class="button-group">
-                    <button class="btn btn-secondary" onclick="resetForm()">초기화</button>
                     <button class="btn btn-primary" onclick="goToStep(2)">다음 단계</button>
                 </div>
             </div>
             
             <!-- 단계 2: 예약자 정보 -->
             <div id="step2" class="step-content">
-                <div class="alert alert-info">
-                    <i class="fas fa-user-check"></i>
-                    <div>
-                        <strong>예약자 정보 입력:</strong> 예약 확인 및 연락을 위해 정보를 정확히 입력해주세요.
-                    </div>
-                </div>
-                
                 <div class="form-group">
                     <label class="required">학생 이름</label>
                     <input type="text" id="student-name" placeholder="학생의 이름을 입력해주세요">
@@ -458,16 +261,9 @@
                         <option value="">선택해주세요</option>
                         <option value="초등1">초등학교 1학년</option>
                         <option value="초등2">초등학교 2학년</option>
-                        <option value="초등3">초등학교 3학년</option>
-                        <option value="초등4">초등학교 4학년</option>
-                        <option value="초등5">초등학교 5학년</option>
-                        <option value="초등6">초등학교 6학년</option>
                         <option value="중등1">중학교 1학년</option>
                         <option value="중등2">중학교 2학년</option>
                         <option value="중등3">중학교 3학년</option>
-                        <option value="고등1">고등학교 1학년</option>
-                        <option value="고등2">고등학교 2학년</option>
-                        <option value="고등3">고등학교 3학년</option>
                     </select>
                 </div>
                 
@@ -484,639 +280,281 @@
                 <div class="form-group">
                     <label class="required">이메일</label>
                     <input type="email" id="parent-email" placeholder="example@email.com">
-                    <small style="color: #666; display: block; margin-top: 5px;">예약 확인서가 발송됩니다</small>
-                </div>
-                
-                <div class="form-group">
-                    <label>연락 가능 시간 (선택)</label>
-                    <select id="contact-time">
-                        <option value="">선택해주세요</option>
-                        <option value="오전 9시 - 12시">오전 9시 - 12시</option>
-                        <option value="오후 1시 - 6시">오후 1시 - 6시</option>
-                        <option value="오후 7시 - 9시">오후 7시 - 9시</option>
-                        <option value="언제든지 가능">언제든지 가능</option>
-                    </select>
                 </div>
                 
                 <div class="button-group">
-                    <button class="btn btn-secondary" onclick="goToStep(1)">이전 단계</button>
+                    <button class="btn btn-primary" onclick="goToStep(1)">이전 단계</button>
                     <button class="btn btn-primary" onclick="goToStep(3)">다음 단계</button>
                 </div>
             </div>
             
             <!-- 단계 3: 예약 확인 -->
             <div id="step3" class="step-content">
-                <div class="alert alert-warning">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <div>
-                        <strong>최종 확인:</strong> 아래 정보를 확인하시고 예약을 완료해주세요.
-                    </div>
-                </div>
-                
-                <div class="reservation-summary">
-                    <h3><i class="fas fa-clipboard-check"></i> 예약 정보 요약</h3>
-                    <div id="reservation-summary-content">
-                        <!-- 예약 정보 동적 표시 -->
-                    </div>
+                <div class="form-group">
+                    <h3>예약 정보 확인</h3>
+                    <div id="reservation-summary"></div>
                 </div>
                 
                 <div class="form-group">
-                    <label class="required">개인정보 수집 및 이용 동의</label>
-                    <div class="terms-box">
-                        <p>더베스트 어학원은 예약 확인 및 상담 안내를 위해 개인정보를 수집합니다.</p>
-                        <p>수집항목: 이름, 연락처, 이메일, 학년정보</p>
-                        <p>보유기간: 예약 후 1년간 보관 후 파기</p>
-                    </div>
-                    <label style="display: flex; align-items: center; margin-top: 10px;">
+                    <label>
                         <input type="checkbox" id="agree-terms">
-                        <span style="margin-left: 8px;">위 내용에 동의합니다</span>
+                        개인정보 수집 및 이용에 동의합니다
                     </label>
                 </div>
                 
-                <div class="form-group">
-                    <label class="required">알림 수신 동의</label>
-                    <div style="margin-top: 10px;">
-                        <label style="display: flex; align-items: center; margin-bottom: 8px;">
-                            <input type="checkbox" id="agree-email" checked>
-                            <span style="margin-left: 8px;">이메일 알림 수신에 동의합니다</span>
-                        </label>
-                    </div>
-                </div>
-                
                 <div class="button-group">
-                    <button class="btn btn-secondary" onclick="goToStep(2)">이전 단계</button>
-                    <button class="btn btn-success" onclick="completeReservation()" id="complete-reservation-btn">
-                        <i class="fas fa-check-circle"></i> 예약 완료하기
-                    </button>
+                    <button class="btn btn-primary" onclick="goToStep(2)">이전 단계</button>
+                    <button class="btn btn-success" onclick="completeReservation()">예약 완료</button>
                 </div>
             </div>
         </div>
         
-        <!-- 테스트 버튼 영역 (개발용) -->
-        <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #3498db;">
-            <h4 style="margin-bottom: 10px; color: #2c3e50;"><i class="fas fa-tools"></i> 시스템 테스트 (관리자용)</h4>
-            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <button class="btn btn-danger" onclick="testGASConnection()">
-                    <i class="fas fa-envelope"></i> GAS 연결 테스트
-                </button>
-                <button class="btn btn-danger" onclick="testFirebaseConnection()">
-                    <i class="fas fa-database"></i> Firebase 테스트
-                </button>
+        <!-- 테스트 패널 -->
+        <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+            <h4>시스템 테스트</h4>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="btn btn-danger" onclick="testGAS()">GAS 테스트</button>
+                <button class="btn btn-danger" onclick="sendTestEmail()">이메일 테스트</button>
             </div>
         </div>
-        
-        <footer>
-            <p>© 2025 더베스트 어학원. All rights reserved.</p>
-            <p>고객센터: 032-252-9600 | 이메일: gcha2514@naver.com</p>
-            <p>인천 연수구 컨벤시아대로 230번길 42 아라프라자 2층 207-1</p>
-        </footer>
     </div>
 
     <!-- 성공 모달 -->
     <div id="success-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
         <div style="background: white; padding: 40px; border-radius: 10px; max-width: 500px; width: 90%; text-align: center;">
             <i class="fas fa-check-circle" style="font-size: 4rem; color: #28a745; margin-bottom: 20px;"></i>
-            <h2 style="margin-bottom: 15px; color: #2c3e50;">예약이 완료되었습니다!</h2>
-            <p id="success-message" style="margin-bottom: 25px; line-height: 1.6;"></p>
-            <div id="email-sent-notice" style="background: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin: 15px 0; display: none;">
-                <i class="fas fa-envelope"></i> 확인 이메일이 발송되었습니다.
-            </div>
-            <div id="reservation-id-display" style="font-size: 1.2rem; font-weight: bold; color: #2c3e50; margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 5px;">
-                예약번호: <span id="reservation-id-value"></span>
-            </div>
-            <div style="display: flex; gap: 10px; justify-content: center;">
-                <button onclick="location.reload()" class="btn btn-primary">새 예약하기</button>
-            </div>
+            <h2>예약이 완료되었습니다!</h2>
+            <p id="success-message"></p>
+            <div id="reservation-id-display" style="font-size: 1.2rem; font-weight: bold; margin: 15px 0;"></div>
+            <button onclick="location.reload()" class="btn btn-primary">새 예약하기</button>
         </div>
     </div>
 
-    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
     
     <script>
-        // ==================== FIREBASE CONFIGURATION ====================
+        // Firebase 설정
         const firebaseConfig = {
             apiKey: "AIzaSyD4gK47WmW78znj1jXDzwMSCH6jAN_LVN8",
-            authDomain: "reservation-33a24.firebaseapp.com",
+            authDomain: "reservation-33a24.firebasestorage.app",
             projectId: "reservation-33a24",
             storageBucket: "reservation-33a24.firebasestorage.app",
             messagingSenderId: "965824309420",
             appId: "1:965824309420:web:060c37983c1d1c38d59709"
         };
-
-        // Firebase 초기화
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        console.log('Firebase 초기화 완료');
         
-        // ==================== GAS CONFIGURATION ====================
-        // 최신 GAS 웹앱 URL로 업데이트
-        const GAS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzJx5_0aMx--8yWYVnC-UMzQKBgHSx9g-y3H3qXo--dOk4P4gqMx6Q7mSfkrY4iVXIZqA/exec';
+        // GAS 웹앱 URL
+        const GAS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzzOpBXRmTPCIolvlHkQ-OJPVruEB81da5731X8LGppzpqUUQqBnxxPB1iNHcOe4QnY/exec';
         
-        // ==================== GLOBAL VARIABLES ====================
-        let reservationData = {
-            date: '',
-            time: '',
-            studentName: '',
-            studentGrade: '',
-            parentName: '',
-            parentPhone: '',
-            parentEmail: '',
-            specialRequest: '',
-            contactTime: '',
-            agreeTerms: false,
-            agreeEmail: true
-        };
+        let reservationData = {};
         
-        // ==================== INITIALIZATION ====================
+        // 초기화
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('더베스트 어학원 예약 시스템 로드됨');
-            console.log('Firebase 프로젝트:', firebaseConfig.projectId);
-            console.log('GAS 웹앱 URL:', GAS_WEBAPP_URL);
-            
+            console.log('시스템 초기화');
             initDatePicker();
             initTimeSlots();
         });
         
-        // 날짜 선택기 초기화
         function initDatePicker() {
             flatpickr("#datepicker", {
                 locale: "ko",
                 dateFormat: "Y년 m월 d일 (D)",
                 minDate: "today",
-                maxDate: new Date().fp_incr(60),
-                disable: [
-                    function(date) {
-                        // 토요일, 일요일 비활성화
-                        return (date.getDay() === 0 || date.getDay() === 6);
-                    }
-                ],
                 onChange: function(selectedDates, dateStr) {
                     reservationData.date = dateStr;
-                    updateTimeSlots();
                 }
             });
         }
         
-        // 시간 슬롯 초기화
         function initTimeSlots() {
-            updateTimeSlots();
-        }
-        
-        function updateTimeSlots() {
-            const timeSlotsContainer = document.getElementById('time-slots');
-            const selectedTimeDisplay = document.getElementById('selected-time-display');
-            const selectedTimeText = document.getElementById('selected-time-text');
-            
-            timeSlotsContainer.innerHTML = '';
-            selectedTimeDisplay.style.display = 'none';
-            reservationData.time = '';
-            
-            // 시간 슬롯 생성 (10:00-19:00)
+            const container = document.getElementById('time-slots');
             for (let hour = 10; hour <= 19; hour++) {
-                const time = `${hour.toString().padStart(2, '0')}:00`;
+                const time = `${hour}:00`;
                 const slot = document.createElement('div');
                 slot.className = 'time-slot';
                 slot.textContent = time;
-                slot.dataset.time = time;
-                
-                // 30% 확률로 예약 불가 표시
-                if (Math.random() > 0.7) {
-                    slot.classList.add('unavailable');
-                    slot.title = '이미 예약된 시간입니다';
-                } else {
-                    slot.addEventListener('click', function() {
-                        if (this.classList.contains('selected')) {
-                            this.classList.remove('selected');
-                            reservationData.time = '';
-                            selectedTimeDisplay.style.display = 'none';
-                        } else {
-                            document.querySelectorAll('.time-slot').forEach(s => {
-                                s.classList.remove('selected');
-                            });
-                            this.classList.add('selected');
-                            reservationData.time = this.dataset.time;
-                            
-                            selectedTimeText.textContent = reservationData.time;
-                            selectedTimeDisplay.style.display = 'block';
-                        }
-                    });
-                }
-                
-                timeSlotsContainer.appendChild(slot);
+                slot.onclick = function() {
+                    document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+                    this.classList.add('selected');
+                    reservationData.time = time;
+                };
+                container.appendChild(slot);
             }
         }
         
-        // ==================== STEP FUNCTIONS ====================
         function goToStep(step) {
-            // 1단계 → 2단계 이동 시 검증
-            if (step === 2) {
-                if (!reservationData.date) {
-                    alert('날짜를 선택해주세요.');
-                    return;
-                }
-                if (!reservationData.time) {
-                    alert('시간을 선택해주세요.');
-                    return;
-                }
-            }
+            // 단계 이동 로직
+            document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
             
-            // 2단계 → 3단계 이동 시 검증
-            if (step === 3) {
-                if (!validateStep2()) {
-                    return;
-                }
-            }
-            
-            // 모든 단계 숨기기
-            document.querySelectorAll('.step-content').forEach(el => {
-                el.classList.remove('active');
-            });
-            document.querySelectorAll('.step').forEach(el => {
-                el.classList.remove('active');
-            });
-            
-            // 선택한 단계 보이기
             document.getElementById(`step${step}`).classList.add('active');
             document.getElementById(`step${step}-indicator`).classList.add('active');
             
-            // 3단계면 요약 업데이트
             if (step === 3) {
-                updateReservationSummary();
+                updateSummary();
             }
         }
         
-        function validateStep2() {
-            // 필수 입력 확인
-            const requiredFields = [
-                { id: 'student-name', name: '학생 이름' },
-                { id: 'student-grade', name: '학년/반' },
-                { id: 'parent-name', name: '보호자 이름' },
-                { id: 'parent-phone', name: '연락처' },
-                { id: 'parent-email', name: '이메일' }
-            ];
+        function updateSummary() {
+            const summary = document.getElementById('reservation-summary');
+            summary.innerHTML = `
+                <p>날짜: ${reservationData.date || '선택 안됨'}</p>
+                <p>시간: ${reservationData.time || '선택 안됨'}</p>
+                <p>학생: ${document.getElementById('student-name').value || '입력 안됨'}</p>
+                <p>이메일: ${document.getElementById('parent-email').value || '입력 안됨'}</p>
+            `;
+        }
+        
+        // ==================== 수정된 GAS 데이터 전송 함수 ====================
+        async function sendToGAS(data) {
+            console.log('GAS로 데이터 전송:', data);
             
-            for (const field of requiredFields) {
-                const element = document.getElementById(field.id);
-                if (!element.value.trim()) {
-                    alert(`${field.name}을(를) 입력해주세요.`);
-                    element.focus();
-                    return false;
+            try {
+                // GAS 스크립트가 JSON을 기대하므로 JSON 형식으로 전송
+                const response = await fetch(GAS_WEBAPP_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP 오류: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('GAS 응답:', result);
+                return result;
+                
+            } catch (error) {
+                console.error('GAS 전송 실패:', error);
+                
+                // JSON 실패 시 폼 데이터로 재시도
+                try {
+                    console.log('폼 데이터로 재시도');
+                    const formData = new FormData();
+                    Object.keys(data).forEach(key => {
+                        formData.append(key, data[key]);
+                    });
+                    
+                    const retryResponse = await fetch(GAS_WEBAPP_URL, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    return await retryResponse.json();
+                } catch (retryError) {
+                    console.error('재시도 실패:', retryError);
+                    throw error;
                 }
             }
-            
-            // 이메일 형식 검사
-            const email = document.getElementById('parent-email').value;
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                alert('유효한 이메일 주소를 입력해주세요.');
-                document.getElementById('parent-email').focus();
-                return false;
+        }
+        
+        async function completeReservation() {
+            if (!document.getElementById('agree-terms').checked) {
+                alert('개인정보 동의가 필요합니다.');
+                return;
             }
             
-            // 전화번호 형식 검사
-            const phone = document.getElementById('parent-phone').value;
-            const phoneRegex = /^01[0-9]-\d{3,4}-\d{4}$/;
-            if (!phoneRegex.test(phone)) {
-                alert('전화번호 형식은 010-1234-5678 과 같이 입력해주세요.');
-                document.getElementById('parent-phone').focus();
-                return false;
-            }
-            
-            // 데이터 저장
+            // 데이터 수집
             reservationData.studentName = document.getElementById('student-name').value;
             reservationData.studentGrade = document.getElementById('student-grade').value;
             reservationData.parentName = document.getElementById('parent-name').value;
             reservationData.parentPhone = document.getElementById('parent-phone').value;
             reservationData.parentEmail = document.getElementById('parent-email').value;
-            reservationData.contactTime = document.getElementById('contact-time').value;
             reservationData.specialRequest = document.getElementById('special-request').value;
             
-            return true;
-        }
-        
-        function updateReservationSummary() {
-            const summaryContent = document.getElementById('reservation-summary-content');
-            const gradeText = getGradeText(reservationData.studentGrade);
-            
-            summaryContent.innerHTML = `
-                <div style="display: grid; gap: 12px;">
-                    <div style="display: flex; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px dashed #e0e0e0;">
-                        <span style="font-weight: 600; color: #555;">예약 유형</span>
-                        <span style="color: #2c3e50;">학습 상담</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px dashed #e0e0e0;">
-                        <span style="font-weight: 600; color: #555;">예약 날짜</span>
-                        <span style="color: #2c3e50;">${reservationData.date}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px dashed #e0e0e0;">
-                        <span style="font-weight: 600; color: #555;">예약 시간</span>
-                        <span style="color: #2c3e50;">${reservationData.time}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px dashed #e0e0e0;">
-                        <span style="font-weight: 600; color: #555;">학생 정보</span>
-                        <span style="color: #2c3e50;">${reservationData.studentName} (${gradeText})</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px dashed #e0e0e0;">
-                        <span style="font-weight: 600; color: #555;">보호자 정보</span>
-                        <span style="color: #2c3e50;">${reservationData.parentName}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px dashed #e0e0e0;">
-                        <span style="font-weight: 600; color: #555;">연락처</span>
-                        <span style="color: #2c3e50;">${reservationData.parentPhone}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px dashed #e0e0e0;">
-                        <span style="font-weight: 600; color: #555;">이메일</span>
-                        <span style="color: #2c3e50;">${reservationData.parentEmail}</span>
-                    </div>
-                    ${reservationData.specialRequest ? `
-                    <div style="display: flex; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px dashed #e0e0e0;">
-                        <span style="font-weight: 600; color: #555;">특별 요청</span>
-                        <span style="color: #2c3e50;">${reservationData.specialRequest}</span>
-                    </div>
-                    ` : ''}
-                </div>
-            `;
-        }
-        
-        function getGradeText(gradeValue) {
-            const gradeMap = {
-                '초등1': '초등 1학년',
-                '초등2': '초등 2학년',
-                '초등3': '초등 3학년',
-                '초등4': '초등 4학년',
-                '초등5': '초등 5학년',
-                '초등6': '초등 6학년',
-                '중등1': '중등 1학년',
-                '중등2': '중등 2학년',
-                '중등3': '중등 3학년',
-                '고등1': '고등 1학년',
-                '고등2': '고등 2학년',
-                '고등3': '고등 3학년'
-            };
-            return gradeMap[gradeValue] || gradeValue;
-        }
-        
-        // ==================== RESERVATION FUNCTIONS ====================
-        async function completeReservation() {
-            // 동의 확인
-            if (!document.getElementById('agree-terms').checked) {
-                alert('개인정보 수집 및 이용에 동의해주세요.');
+            // 검증
+            if (!reservationData.date || !reservationData.time) {
+                alert('날짜와 시간을 선택해주세요.');
                 return;
             }
             
-            reservationData.agreeTerms = true;
-            reservationData.agreeEmail = document.getElementById('agree-email').checked;
-            
-            // 이메일 수신 동의 확인
-            if (!reservationData.agreeEmail) {
-                if (!confirm('이메일 알림 수신에 동의하지 않으시면 예약 확인서를 받으실 수 없습니다.\n계속 진행하시겠습니까?')) {
-                    return;
-                }
+            if (!reservationData.parentEmail) {
+                alert('이메일을 입력해주세요.');
+                return;
             }
             
-            const submitBtn = document.getElementById('complete-reservation-btn');
-            const originalText = submitBtn.innerHTML;
+            // 예약번호 생성
+            const reservationId = 'RES' + Date.now();
             
             try {
-                // 버튼 로딩 상태로 변경
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<div class="spinner"></div> 처리 중...';
+                // Firebase 저장
+                firebase.initializeApp(firebaseConfig);
+                const db = firebase.firestore();
                 
-                // 예약번호 생성
-                const reservationId = 'RES' + 
-                    new Date().getFullYear().toString().slice(2) +
-                    (new Date().getMonth() + 1).toString().padStart(2, '0') +
-                    new Date().getDate().toString().padStart(2, '0') +
-                    Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-                
-                console.log('📝 예약 데이터:', reservationData);
-                console.log('🔢 예약번호:', reservationId);
-                
-                // 1. Firebase에 예약 데이터 저장
-                const firestoreData = {
-                    serviceType: '학습 상담',
-                    studentName: reservationData.studentName,
-                    studentGrade: reservationData.studentGrade,
-                    parentName: reservationData.parentName,
-                    parentPhone: reservationData.parentPhone,
-                    parentEmail: reservationData.parentEmail,
-                    reservationDate: reservationData.date,
-                    reservationTime: reservationData.time,
-                    specialRequest: reservationData.specialRequest || '',
-                    contactTime: reservationData.contactTime || '',
+                await db.collection('reservations').add({
+                    ...reservationData,
                     reservationId: reservationId,
-                    status: '대기중',
-                    agreeTerms: reservationData.agreeTerms,
-                    agreeEmail: reservationData.agreeEmail,
-                    emailSent: false,
-                    emailSentAt: null,
-                    emailResult: null,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                };
+                    timestamp: new Date().toISOString()
+                });
                 
-                console.log('🔥 Firebase 저장 시작...');
-                const docRef = await db.collection('reservations').add(firestoreData);
-                const docId = docRef.id;
-                console.log('✅ Firebase 저장 성공! 문서 ID:', docId);
+                console.log('Firebase 저장 완료');
                 
-                // 2. GAS로 이메일 발송 요청 (강화된 형식)
+                // GAS로 이메일 발송 요청
                 const gasData = {
-                    action: 'send_reservation_email',
-                    reservation_id: reservationId,
                     parent_email: reservationData.parentEmail,
                     student_name: reservationData.studentName,
-                    student_grade: getGradeText(reservationData.studentGrade),
+                    student_grade: reservationData.studentGrade,
                     parent_name: reservationData.parentName,
                     parent_phone: reservationData.parentPhone,
                     reservation_date: reservationData.date,
                     reservation_time: reservationData.time,
-                    contact_time: reservationData.contactTime || '',
-                    special_request: reservationData.specialRequest || '',
-                    academy_name: '더베스트 어학원',
-                    academy_phone: '032-252-9600',
-                    academy_email: 'gcha2514@naver.com'
+                    reservation_id: reservationId,
+                    special_request: reservationData.specialRequest || ''
                 };
                 
-                console.log('📤 GAS 전송 데이터:', gasData);
+                console.log('GAS 전송 데이터:', gasData);
                 
-                // GAS 웹앱 호출 (강화된 방식)
-                const gasResponse = await fetch(GAS_WEBAPP_URL, {
-                    method: 'POST',
-                    mode: 'no-cors', // CORS 문제 방지
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: new URLSearchParams(gasData)
-                }).catch(async (fetchError) => {
-                    // no-cors 모드에서는 응답을 읽을 수 없으므로 별도 처리
-                    console.log('📨 GAS 요청 전송됨 (no-cors 모드)');
-                    
-                    // Firebase에 상태 업데이트 (이메일 발송 시도 중)
-                    await db.collection('reservations').doc(docId).update({
-                        emailSent: true,
-                        emailSentAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        emailResult: { status: 'request_sent_no_cors', timestamp: new Date().toISOString() }
-                    });
-                    
-                    return { ok: true }; // 성공으로 간주
-                });
+                const gasResult = await sendToGAS(gasData);
                 
-                console.log('📨 GAS 응답 상태:', gasResponse.ok);
-                
-                // 성공 모달 표시
-                document.getElementById('success-message').innerHTML = `
-                    <strong>${reservationData.parentName}님의 학습 상담 예약이 완료되었습니다.</strong><br><br>
-                    예약일시: ${reservationData.date} ${reservationData.time}<br>
-                    학생: ${reservationData.studentName} (${getGradeText(reservationData.studentGrade)})<br><br>
-                    <small style="color: #666;">
-                        확인 이메일이 발송되었습니다.<br>
-                        <span style="color: #e74c3c;">※ 이메일이 보이지 않을 경우 스팸함을 확인해주세요.</span><br><br>
-                        예약 확인 및 변경은 고객센터(032-252-9600)로 문의해주세요.
-                    </small>
-                `;
-                
-                document.getElementById('reservation-id-value').textContent = reservationId;
-                document.getElementById('email-sent-notice').style.display = 'block';
+                // 결과 표시
+                document.getElementById('success-message').textContent = 
+                    `예약이 완료되었습니다. 확인 이메일이 발송되었습니다.`;
+                document.getElementById('reservation-id-display').textContent = 
+                    `예약번호: ${reservationId}`;
                 document.getElementById('success-modal').style.display = 'flex';
                 
-                // Firebase에 최종 상태 업데이트
-                await db.collection('reservations').doc(docId).update({
-                    emailSent: true,
-                    emailSentAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    emailResult: { 
-                        status: 'success', 
-                        timestamp: new Date().toISOString(),
-                        reservationId: reservationId
-                    }
-                });
-                
-                console.log('🎉 예약 프로세스 완료!');
-                
             } catch (error) {
-                console.error('❌ 예약 처리 중 오류 발생:', error);
-                
-                let errorMessage = error.message || '알 수 없는 오류';
-                
-                // Firebase 오류일 경우
-                if (error.code) {
-                    errorMessage = `Firebase 오류: ${error.code} - ${errorMessage}`;
-                }
-                
-                alert(`예약 처리 중 오류가 발생했습니다:\n\n${errorMessage}\n\n고객센터(032-252-9600)로 연락해 예약번호를 알려주시면 확인해드리겠습니다.`);
-                
-                // 오류 발생 시에도 모달 표시 (예약번호 제공)
-                if (typeof reservationId !== 'undefined') {
-                    document.getElementById('success-message').innerHTML = `
-                        <strong>예약이 저장되었으나 이메일 발송에 문제가 발생했습니다.</strong><br><br>
-                        예약번호: <span style="color: #e74c3c;">${reservationId}</span><br>
-                        예약일시: ${reservationData.date} ${reservationData.time}<br><br>
-                        <span style="color: #e74c3c;">
-                            ※ 반드시 아래 예약번호를 기록해두시고<br>
-                            고객센터(032-252-9600)로 예약 확인을 요청해주세요.
-                        </span>
-                    `;
-                    
-                    document.getElementById('reservation-id-value').textContent = reservationId;
-                    document.getElementById('email-sent-notice').style.display = 'none';
-                    document.getElementById('success-modal').style.display = 'flex';
-                }
-                
-            } finally {
-                // 버튼 상태 복원
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> 예약 완료하기';
+                console.error('예약 실패:', error);
+                alert(`예약 실패: ${error.message}`);
             }
         }
         
-        function resetForm() {
-            if (confirm('입력한 모든 내용이 초기화됩니다. 계속하시겠습니까?')) {
-                // 폼 초기화
-                document.getElementById('datepicker').value = '';
-                document.getElementById('student-name').value = '';
-                document.getElementById('student-grade').value = '';
-                document.getElementById('parent-name').value = '';
-                document.getElementById('parent-phone').value = '';
-                document.getElementById('parent-email').value = '';
-                document.getElementById('special-request').value = '';
-                document.getElementById('contact-time').value = '';
-                document.getElementById('agree-terms').checked = false;
-                document.getElementById('agree-email').checked = true;
-                
-                // 데이터 초기화
-                reservationData = {
-                    date: '',
-                    time: '',
-                    studentName: '',
-                    studentGrade: '',
-                    parentName: '',
-                    parentPhone: '',
-                    parentEmail: '',
-                    specialRequest: '',
-                    contactTime: '',
-                    agreeTerms: false,
-                    agreeEmail: true
-                };
-                
-                // 시간 슬롯 초기화
-                updateTimeSlots();
-                
-                // 1단계로 이동
-                goToStep(1);
+        // 테스트 함수
+        async function testGAS() {
+            try {
+                const result = await fetch(GAS_WEBAPP_URL + '?test=true');
+                const data = await result.json();
+                alert(`GAS 테스트 성공: ${data.message}`);
+            } catch (error) {
+                alert(`GAS 테스트 실패: ${error.message}`);
             }
         }
         
-        // ==================== TEST FUNCTIONS ====================
-        async function testGASConnection() {
-            console.log('🔗 GAS 연결 테스트 시작');
+        async function sendTestEmail() {
+            const email = prompt('테스트 이메일 주소:');
+            if (!email) return;
             
             const testData = {
-                action: 'test',
-                test_time: new Date().toISOString(),
-                academy: '더베스트 어학원'
+                parent_email: email,
+                student_name: '테스트학생',
+                student_grade: '중등1',
+                parent_name: '테스트보호자',
+                parent_phone: '010-1234-5678',
+                reservation_date: '2026년 1월 10일 (토)',
+                reservation_time: '14:00',
+                reservation_id: 'TEST-' + Date.now(),
+                special_request: '이메일 시스템 테스트입니다'
             };
             
             try {
-                const response = await fetch(GAS_WEBAPP_URL + '?test=true&time=' + Date.now(), {
-                    method: 'GET',
-                    mode: 'no-cors'
-                });
-                
-                console.log('✅ GAS 테스트 요청 전송됨');
-                alert('GAS 연결 테스트 완료!\n\n요청이 전송되었습니다.\nGAS 스크립트 로그를 확인해주세요.');
-                
+                const result = await sendToGAS(testData);
+                alert(`테스트 이메일 발송: ${result.message}`);
             } catch (error) {
-                console.error('❌ GAS 연결 테스트 실패:', error);
-                alert('GAS 연결 테스트 실패: ' + error.message + '\n\nGAS 웹앱 URL을 확인해주세요.');
-            }
-        }
-        
-        async function testFirebaseConnection() {
-            console.log('🔥 Firebase 연결 테스트 시작');
-            
-            try {
-                // 간단한 테스트 데이터 저장
-                const testData = {
-                    test: true,
-                    message: 'Firebase 연결 테스트',
-                    timestamp: new Date().toISOString(),
-                    academy: '더베스트 어학원'
-                };
-                
-                const docRef = await db.collection('test_connection').add(testData);
-                console.log('✅ Firebase 저장 성공! 문서 ID:', docRef.id);
-                
-                // 저장된 데이터 확인
-                const doc = await docRef.get();
-                const data = doc.data();
-                
-                alert(`Firebase 연결 테스트 성공!\n\n문서 ID: ${doc.id}\n저장시간: ${data.timestamp}\n\nFirebase 콘솔에서 확인해주세요.`);
-                
-            } catch (error) {
-                console.error('❌ Firebase 연결 테스트 실패:', error);
-                alert('Firebase 연결 테스트 실패: ' + error.message + '\n\nFirebase 설정을 확인해주세요.');
+                alert(`테스트 실패: ${error.message}`);
             }
         }
     </script>
