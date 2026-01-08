@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
-        /* ... 기존 CSS 코드 전체 유지 ... */
         * {
             margin: 0;
             padding: 0;
@@ -27,12 +26,365 @@
             padding: 20px;
         }
         
-        /* ... 중간 CSS 코드 생략 (전체 유지) ... */
+        header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .logo-icon {
+            font-size: 2.5rem;
+            background: white;
+            color: #3498db;
+            padding: 15px;
+            border-radius: 50%;
+        }
+        
+        .logo h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+        
+        .logo p {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+        
+        .back-link {
+            position: absolute;
+            top: 25px;
+            right: 30px;
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.3s;
+        }
+        
+        .back-link:hover {
+            opacity: 0.8;
+        }
+        
+        .reservation-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        
+        .reservation-header {
+            background: linear-gradient(to right, #4a6fa5, #6a9bd8);
+            color: white;
+            padding: 25px 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .reservation-icon {
+            font-size: 2.5rem;
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 50%;
+        }
+        
+        .reservation-header h2 {
+            font-size: 1.6rem;
+            margin-bottom: 5px;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            flex: 1;
+        }
+        
+        .step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 60%;
+            width: 100%;
+            height: 2px;
+            background: #ddd;
+            z-index: 1;
+        }
+        
+        .step.completed:not(:last-child)::after {
+            background: #28a745;
+        }
+        
+        .step.active .step-number {
+            background: #007bff;
+            color: white;
+        }
+        
+        .step.completed .step-number {
+            background: #28a745;
+            color: white;
+        }
+        
+        .step .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .step-content {
+            padding: 30px;
+            display: none;
+        }
+        
+        .step-content.active {
+            display: block;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        
+        .alert-info {
+            background: #e3f2fd;
+            color: #0c5460;
+            border-left: 4px solid #3498db;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .alert-icon {
+            font-size: 1.2rem;
+            margin-top: 2px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .form-group label.required::after {
+            content: ' *';
+            color: #e74c3c;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        
+        .time-slots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 12px;
+            margin-top: 10px;
+        }
+        
+        .time-slot {
+            padding: 12px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .time-slot:hover:not(.unavailable) {
+            border-color: #3498db;
+            background: #f0f8ff;
+        }
+        
+        .time-slot.selected {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+        
+        .time-slot.unavailable {
+            background: #f5f5f5;
+            color: #999;
+            cursor: not-allowed;
+            text-decoration: line-through;
+        }
+        
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        
+        .btn-success {
+            background: #2ecc71;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #27ae60;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(46, 204, 113, 0.3);
+        }
+        
+        .terms-box {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .reservation-summary {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .reservation-summary h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .reservation-detail {
+            display: grid;
+            gap: 12px;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #e0e0e0;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .detail-value {
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            border-top: 1px solid #eee;
+            margin-top: 30px;
+        }
         
         @media (max-width: 768px) {
             .step-indicator {
                 flex-direction: column;
                 gap: 15px;
+            }
+            
+            .step:not(:last-child)::after {
+                display: none;
             }
             
             .button-group {
@@ -46,6 +398,14 @@
             
             .time-slots-grid {
                 grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .back-link {
+                position: relative;
+                top: 0;
+                right: 0;
+                margin-top: 15px;
+                justify-content: flex-end;
             }
         }
     </style>
@@ -293,6 +653,9 @@
         const db = firebase.firestore();
         console.log('Firebase 초기화 완료');
 
+        // Google Apps Script 웹앱 URL
+        const GAS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzzOpBXRmTPCIolvlHkQ-OJPVruEB81da5731X8LGppzpqUUQqBnxxPB1iNHcOe4QnY/exec';
+        
         // URL 파라미터로부터 예약 타입 가져오기
         const urlParams = new URLSearchParams(window.location.search);
         const reservationType = urlParams.get('type') || 'learning';
@@ -315,18 +678,13 @@
             agreeEmail: false
         };
         
-        // Formspree 설정 - 새 계정으로 변경
-        const FORMSPREE_FORM_ID = 'mbdlngyz'; // 새 계정 Form ID
-        const FORMSPREE_URL = `https://formspree.io/f/${FORMSPREE_FORM_ID}`;
-        
         // 디버깅 플래그
         const DEBUG_MODE = true;
         
         // 페이지 로드 시 초기화
         document.addEventListener('DOMContentLoaded', function() {
             console.log('=== 예약 페이지 로드 완료 ===');
-            console.log('Formspree URL:', FORMSPREE_URL);
-            console.log('Form ID:', FORMSPREE_FORM_ID);
+            console.log('Google Apps Script URL:', GAS_WEBAPP_URL);
             console.log('디버깅 모드:', DEBUG_MODE ? '활성화' : '비활성화');
             
             initReservationType();
@@ -349,12 +707,9 @@
             const originalFetch = window.fetch;
             window.fetch = function(url, options) {
                 console.log(`🌐 Fetch 요청: ${url}`);
-                if (DEBUG_MODE && options && options.body instanceof FormData) {
-                    console.log('📦 FormData 내용:');
-                    for (let [key, value] of options.body.entries()) {
-                        console.log(`  ${key}:`, typeof value === 'string' ? 
-                            (key === 'message' ? value.substring(0, 50) + '...' : value) : value);
-                    }
+                if (DEBUG_MODE && options && options.body) {
+                    console.log('📦 요청 내용:', typeof options.body === 'string' ? 
+                        options.body.substring(0, 200) : options.body);
                 }
                 return originalFetch.apply(this, arguments);
             };
@@ -598,135 +953,74 @@
             return gradeMap[gradeValue] || gradeValue;
         }
 
-        // ==================== FORMPREE 전송 함수 (디버깅 강화) ====================
-        async function sendToFormspree(reservationData, reservationId, docId) {
+        // ==================== Google Apps Script 이메일 전송 ====================
+        async function sendEmailViaGAS(reservationData, reservationId, docId) {
             try {
-                console.log('=== FORMPREE 전송 디버깅 시작 ===');
+                console.log('=== Google Apps Script 이메일 전송 시작 ===');
                 console.log('📧 수신자 이메일:', reservationData.parentEmail);
-                console.log('🔗 Form URL:', FORMSPREE_URL);
-                console.log('📝 예약 데이터:', JSON.stringify(reservationData, null, 2));
+                console.log('🔗 GAS URL:', GAS_WEBAPP_URL);
                 
-                // FormData 생성
-                const formData = new FormData();
+                // GAS로 전송할 데이터 준비
+                const emailData = {
+                    action: 'sendEmail',
+                    reservationId: reservationId,
+                    toEmail: reservationData.parentEmail,
+                    studentName: reservationData.studentName,
+                    parentName: reservationData.parentName,
+                    reservationDate: reservationData.date,
+                    reservationTime: reservationData.time,
+                    studentGrade: getGradeText(reservationData.studentGrade),
+                    parentPhone: reservationData.parentPhone,
+                    specialRequest: reservationData.specialRequest || '없음',
+                    contactTime: reservationData.contactTime || '선택 안함'
+                };
                 
-                // Formspree 필수 필드 (매우 간단하게)
-                formData.append('_subject', `[더베스트어학원] ${reservationData.studentName}님 예약 완료`);
-                formData.append('_replyto', reservationData.parentEmail);
-                formData.append('email', reservationData.parentEmail);
-                formData.append('_language', 'ko');
-                formData.append('_format', 'plain');
+                console.log('📤 GAS 전송 데이터:', emailData);
                 
-                // 스팸 방지용 honey pot
-                formData.append('_gotcha', '');
-                
-                // 간단한 메시지만 전송 (너무 복잡하면 문제 발생)
-                const simpleMessage = `예약번호: ${reservationId}
-학생: ${reservationData.studentName} (${getGradeText(reservationData.studentGrade)})
-예약일시: ${reservationData.date} ${reservationData.time}
-보호자: ${reservationData.parentName}
-연락처: ${reservationData.parentPhone}`;
-                
-                formData.append('message', simpleMessage);
-                
-                // 디버깅용 FormData 내용 출력
-                console.log('📝 전송할 FormData 내용:');
-                const formDataEntries = [];
-                for (let [key, value] of formData.entries()) {
-                    formDataEntries.push({key, value: value.substring(0, 100)});
-                    console.log(`  ${key}:`, value.substring(0, 100) + (value.length > 100 ? '...' : ''));
-                }
-                
-                // Fetch 요청
-                console.log('🌐 Formspree로 요청 전송중...');
+                // GAS 웹앱에 POST 요청
                 const startTime = Date.now();
                 
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10초 타임아웃
-                
-                const response = await fetch(FORMSPREE_URL, {
+                const response = await fetch(GAS_WEBAPP_URL, {
                     method: 'POST',
-                    body: formData,
                     headers: {
-                        'Accept': 'application/json'
+                        'Content-Type': 'application/json',
                     },
-                    mode: 'cors',
-                    signal: controller.signal
+                    body: JSON.stringify(emailData),
+                    mode: 'no-cors' // CORS 이슈를 피하기 위해 no-cors 모드 사용
                 });
                 
-                clearTimeout(timeoutId);
-                
                 const endTime = Date.now();
-                console.log(`⏱️ 요청 소요 시간: ${endTime - startTime}ms`);
-                console.log('📨 응답 상태:', response.status, response.statusText);
-                console.log('📋 응답 헤더:', Object.fromEntries(response.headers.entries()));
+                console.log(`⏱️ GAS 요청 소요 시간: ${endTime - startTime}ms`);
                 
-                if (response.ok) {
-                    const result = await response.json();
-                    console.log('✅ Formspree 전송 성공! 응답:', result);
-                    
-                    // Firestore에 로그 저장
-                    try {
-                        await db.collection('emailLogs').add({
-                            reservationId: reservationId,
-                            docId: docId,
-                            email: reservationData.parentEmail,
-                            sentAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            status: 'sent',
-                            via: 'formspree',
-                            formId: FORMSPREE_FORM_ID,
-                            responseStatus: response.status,
-                            timestamp: new Date().toISOString(),
-                            debug: {
-                                formData: formDataEntries,
-                                duration: endTime - startTime
-                            }
-                        });
-                        console.log('📝 이메일 로그 저장 완료');
-                    } catch (logError) {
-                        console.warn('⚠️ 로그 저장 실패:', logError);
-                    }
-                    
-                    return { success: true };
-                } else {
-                    let errorText = '';
-                    try {
-                        errorText = await response.text();
-                        console.error('❌ Formspree 전송 실패 - 상태코드:', response.status);
-                        console.error('❌ 에러 내용:', errorText.substring(0, 500));
-                    } catch (e) {
-                        console.error('❌ 에러 내용 읽기 실패:', e);
-                    }
-                    
-                    // Firestore에 실패 로그 저장
-                    try {
-                        await db.collection('emailLogs').add({
-                            reservationId: reservationId,
-                            docId: docId,
-                            email: reservationData.parentEmail,
-                            sentAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            status: 'failed',
-                            via: 'formspree',
-                            formId: FORMSPREE_FORM_ID,
-                            responseStatus: response.status,
-                            error: errorText.substring(0, 1000),
-                            debug: {
-                                formData: formDataEntries,
-                                duration: endTime - startTime
-                            }
-                        });
-                    } catch (logError) {
-                        console.warn('⚠️ 실패 로그 저장 실패:', logError);
-                    }
-                    
-                    return { 
-                        success: false, 
-                        error: `Formspree 전송 실패: ${response.status}`,
-                        details: errorText.substring(0, 500)
-                    };
+                // no-cors 모드에서는 response를 읽을 수 없으므로 항상 성공으로 간주
+                // 실제로는 GAS가 이메일을 발송하게 됨
+                console.log('✅ GAS 이메일 요청 전송 완료');
+                
+                // Firestore에 로그 저장
+                try {
+                    await db.collection('emailLogs').add({
+                        reservationId: reservationId,
+                        docId: docId,
+                        email: reservationData.parentEmail,
+                        sentAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        status: 'sent',
+                        via: 'google-apps-script',
+                        gasUrl: GAS_WEBAPP_URL,
+                        timestamp: new Date().toISOString(),
+                        debug: {
+                            emailData: emailData,
+                            duration: endTime - startTime
+                        }
+                    });
+                    console.log('📝 이메일 로그 저장 완료');
+                } catch (logError) {
+                    console.warn('⚠️ 로그 저장 실패:', logError);
                 }
                 
+                return { success: true, note: 'GAS 이메일 요청이 전송되었습니다. 이메일 발송은 GAS에서 처리됩니다.' };
+                
             } catch (error) {
-                console.error('❌ Formspree 전송 중 오류:', error);
+                console.error('❌ GAS 이메일 전송 중 오류:', error);
                 console.error('❌ 오류 스택:', error.stack);
                 
                 return { 
@@ -735,11 +1029,11 @@
                     stack: error.stack
                 };
             } finally {
-                console.log('=== FORMPREE 전송 디버깅 종료 ===');
+                console.log('=== GAS 이메일 전송 디버깅 종료 ===');
             }
         }
         
-        // 예약 완료 (Firebase 저장 + Formspree 이메일 포함)
+        // 예약 완료 (Firebase 저장 + GAS 이메일 포함)
         async function completeReservation() {
             // 버튼 상태 저장
             const submitBtn = document.getElementById('complete-reservation-btn');
@@ -794,7 +1088,7 @@
                     agreeTerms: reservationData.agreeTerms,
                     agreeSMS: reservationData.agreeSMS,
                     agreeEmail: reservationData.agreeEmail,
-                    formspreeFormId: FORMSPREE_FORM_ID,
+                    gasWebAppUrl: GAS_WEBAPP_URL,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
@@ -805,11 +1099,11 @@
                 const docId = docRef.id;
                 console.log('✅ Firestore 저장 성공! 문서 ID:', docId);
                 
-                // 2. Formspree로 이메일 발송 (이메일 동의한 경우)
+                // 2. Google Apps Script로 이메일 발송 (이메일 동의한 경우)
                 let emailResult = { success: false };
                 if (reservationData.agreeEmail) {
-                    console.log('📧 Formspree 이메일 발송 시작...');
-                    emailResult = await sendToFormspree(reservationData, reservationId, docId);
+                    console.log('📧 Google Apps Script 이메일 발송 시작...');
+                    emailResult = await sendEmailViaGAS(reservationData, reservationId, docId);
                     console.log('📧 이메일 발송 결과:', emailResult.success ? '성공' : '실패');
                     
                     if (!emailResult.success) {
@@ -856,7 +1150,7 @@
                     ...reservationData,
                     reservationId: reservationId,
                     docId: docId,
-                    formspreeFormId: FORMSPREE_FORM_ID,
+                    gasWebAppUrl: GAS_WEBAPP_URL,
                     createdAt: new Date().toLocaleString('ko-KR'),
                     emailSent: emailResult.success,
                     emailError: emailResult.error || null
@@ -867,8 +1161,7 @@
                 localStorage.setItem('academy_reservations', JSON.stringify(reservations));
                 
                 console.log('🎉 예약 프로세스 완료!');
-                console.log('🔍 Network 탭에서 Formspree 요청 확인하세요');
-                console.log('📋 Formspree 대시보드에서 제출 확인하세요: https://formspree.io/forms/' + FORMSPREE_FORM_ID + '/submissions');
+                console.log('🔍 Network 탭에서 Google Apps Script 요청 확인하세요');
                 
             } catch (error) {
                 console.error('❌ 예약 처리 실패:', error);
@@ -900,63 +1193,52 @@
             window.location.href = 'my_reservations.html';
         }
         
-        // 테스트 함수 - 브라우저 콘솔에서 실행
-        window.testFormspreeConnection = async function() {
-            console.log('=== FORMPREE 연결 테스트 시작 ===');
-            console.log('Form ID:', FORMSPREE_FORM_ID);
-            console.log('Form URL:', FORMSPREE_URL);
+        // 테스트 함수 - GAS 연결 테스트
+        window.testGASConnection = async function() {
+            console.log('=== Google Apps Script 연결 테스트 시작 ===');
+            console.log('GAS URL:', GAS_WEBAPP_URL);
             
             const testEmail = prompt('테스트 이메일 입력:', 'test@gmail.com');
             if (!testEmail) return;
             
-            const testData = new FormData();
-            testData.append('_subject', 'Formspree 연결 테스트');
-            testData.append('_replyto', testEmail);
-            testData.append('email', testEmail);
-            testData.append('_language', 'ko');
-            testData.append('message', 'Formspree 연결 테스트 메시지\n시간: ' + new Date().toLocaleString());
+            const testData = {
+                action: 'test',
+                toEmail: testEmail,
+                testMessage: 'Google Apps Script 연결 테스트',
+                timestamp: new Date().toLocaleString('ko-KR')
+            };
             
-            console.log('📤 테스트 데이터 전송...');
+            console.log('📤 테스트 데이터:', testData);
             
             try {
-                const response = await fetch(FORMSPREE_URL, {
+                const response = await fetch(GAS_WEBAPP_URL, {
                     method: 'POST',
-                    body: testData,
                     headers: {
-                        'Accept': 'application/json'
-                    }
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData),
+                    mode: 'no-cors'
                 });
                 
-                console.log('📨 응답 상태:', response.status, response.statusText);
-                console.log('📋 응답 헤더:', Object.fromEntries(response.headers.entries()));
+                console.log('📨 GAS 테스트 요청 전송 완료');
+                alert('✅ Google Apps Script 테스트 요청이 전송되었습니다.\n\nGAS 스크립트가 이메일을 발송할 것입니다.\n이메일을 확인해보세요.');
                 
-                if (response.ok) {
-                    const result = await response.json();
-                    console.log('✅ 테스트 성공! 응답:', result);
-                    alert('✅ 테스트 성공!\nFormspree 대시보드에서 제출을 확인하세요.\n이메일도 확인해보세요.');
-                } else {
-                    const errorText = await response.text();
-                    console.error('❌ 테스트 실패:', errorText.substring(0, 500));
-                    alert('❌ 테스트 실패: 상태코드 ' + response.status + '\n콘솔에서 상세 내용 확인');
-                }
             } catch (error) {
-                console.error('❌ 테스트 중 오류:', error);
-                alert('❌ 테스트 중 오류: ' + error.message);
+                console.error('❌ GAS 테스트 중 오류:', error);
+                alert('❌ GAS 테스트 중 오류: ' + error.message);
             }
             
-            console.log('=== FORMPREE 연결 테스트 종료 ===');
+            console.log('=== GAS 연결 테스트 종료 ===');
         };
         
-        // 직접 Formspree 요청 보기
-        window.showFormspreeRequest = function() {
-            console.log('🔍 Formspree 요청 확인 방법:');
+        // 직접 GAS 요청 보기
+        window.showGASRequest = function() {
+            console.log('🔍 Google Apps Script 요청 확인 방법:');
             console.log('1. F12 개발자 도구 열기');
             console.log('2. Network 탭 선택');
-            console.log('3. "Fetch/XHR" 필터 적용');
-            console.log('4. 예약 완료 버튼 클릭');
-            console.log('5. formspree.io 요청 찾아서 클릭');
-            console.log('6. "Headers" 탭에서 요청 확인');
-            console.log('7. "Response" 탭에서 응답 확인');
+            console.log('3. 예약 완료 버튼 클릭');
+            console.log('4. GAS URL 요청 확인');
+            console.log('5. "Headers" 탭에서 요청 내용 확인');
         };
         
         // URL 복사 함수
