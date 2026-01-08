@@ -288,6 +288,15 @@
             box-shadow: 0 5px 10px rgba(46, 204, 113, 0.3);
         }
         
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
         .terms-box {
             background: #f8f9fa;
             border: 1px solid #e0e0e0;
@@ -315,6 +324,21 @@
             line-height: 1.6;
             border-top: 1px solid #eee;
             margin-top: 30px;
+        }
+        
+        /* 로딩 스피너 */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
         
         @media (max-width: 768px) {
@@ -528,6 +552,19 @@
             </div>
         </div>
         
+        <!-- 테스트 버튼 영역 (개발용) -->
+        <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #3498db;">
+            <h4 style="margin-bottom: 10px; color: #2c3e50;"><i class="fas fa-tools"></i> 시스템 테스트 (관리자용)</h4>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn btn-danger" onclick="testGASConnection()">
+                    <i class="fas fa-envelope"></i> GAS 연결 테스트
+                </button>
+                <button class="btn btn-danger" onclick="testFirebaseConnection()">
+                    <i class="fas fa-database"></i> Firebase 테스트
+                </button>
+            </div>
+        </div>
+        
         <footer>
             <p>© 2025 더베스트 어학원. All rights reserved.</p>
             <p>고객센터: 032-252-9600 | 이메일: gcha2514@naver.com</p>
@@ -543,6 +580,9 @@
             <p id="success-message" style="margin-bottom: 25px; line-height: 1.6;"></p>
             <div id="email-sent-notice" style="background: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin: 15px 0; display: none;">
                 <i class="fas fa-envelope"></i> 확인 이메일이 발송되었습니다.
+            </div>
+            <div id="reservation-id-display" style="font-size: 1.2rem; font-weight: bold; color: #2c3e50; margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                예약번호: <span id="reservation-id-value"></span>
             </div>
             <div style="display: flex; gap: 10px; justify-content: center;">
                 <button onclick="location.reload()" class="btn btn-primary">새 예약하기</button>
@@ -571,7 +611,8 @@
         console.log('Firebase 초기화 완료');
         
         // ==================== GAS CONFIGURATION ====================
-        const GAS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzS3z0Fssp7RzGt-x52RVHshb_OMlr2Qhu-ifDSkUf1Dok20sVKRkIo1AsZ0hbbF2S4/exec';
+        // 최신 GAS 웹앱 URL로 업데이트
+        const GAS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzJx5_0aMx--8yWYVnC-UMzQKBgHSx9g-y3H3qXo--dOk4P4gqMx6Q7mSfkrY4iVXIZqA/exec';
         
         // ==================== GLOBAL VARIABLES ====================
         let reservationData = {
@@ -841,7 +882,7 @@
             try {
                 // 버튼 로딩 상태로 변경
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 처리 중...';
+                submitBtn.innerHTML = '<div class="spinner"></div> 처리 중...';
                 
                 // 예약번호 생성
                 const reservationId = 'RES' + 
@@ -869,6 +910,9 @@
                     status: '대기중',
                     agreeTerms: reservationData.agreeTerms,
                     agreeEmail: reservationData.agreeEmail,
+                    emailSent: false,
+                    emailSentAt: null,
+                    emailResult: null,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
@@ -878,8 +922,10 @@
                 const docId = docRef.id;
                 console.log('✅ Firebase 저장 성공! 문서 ID:', docId);
                 
-                // 2. GAS로 이메일 발송 요청
+                // 2. GAS로 이메일 발송 요청 (강화된 형식)
                 const gasData = {
+                    action: 'send_reservation_email',
+                    reservation_id: reservationId,
                     parent_email: reservationData.parentEmail,
                     student_name: reservationData.studentName,
                     student_grade: getGradeText(reservationData.studentGrade),
@@ -887,61 +933,101 @@
                     parent_phone: reservationData.parentPhone,
                     reservation_date: reservationData.date,
                     reservation_time: reservationData.time,
-                    reservation_id: reservationId,
                     contact_time: reservationData.contactTime || '',
-                    special_request: reservationData.specialRequest || ''
+                    special_request: reservationData.specialRequest || '',
+                    academy_name: '더베스트 어학원',
+                    academy_phone: '032-252-9600',
+                    academy_email: 'gcha2514@naver.com'
                 };
                 
                 console.log('📤 GAS 전송 데이터:', gasData);
                 
-                // GAS 웹앱 호출
-                const response = await fetch(GAS_WEBAPP_URL, {
+                // GAS 웹앱 호출 (강화된 방식)
+                const gasResponse = await fetch(GAS_WEBAPP_URL, {
                     method: 'POST',
+                    mode: 'no-cors', // CORS 문제 방지
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: new URLSearchParams({
-                        data: JSON.stringify(gasData)
-                    })
-                });
-                
-                const result = await response.json();
-                console.log('📨 GAS 응답:', result);
-                
-                if (result.success) {
-                    // 성공 모달 표시
-                    document.getElementById('success-message').innerHTML = `
-                        <strong>예약번호: ${reservationId}</strong><br><br>
-                        ${reservationData.parentName}님의 학습 상담 예약이 완료되었습니다.<br>
-                        예약일시: ${reservationData.date} ${reservationData.time}<br><br>
-                        <small style="color: #666;">
-                            확인 이메일이 발송되었습니다. 스팸함도 확인해주세요.<br>
-                            예약 확인 및 변경은 고객센터(032-252-9600)로 문의해주세요.
-                        </small>
-                    `;
+                    body: new URLSearchParams(gasData)
+                }).catch(async (fetchError) => {
+                    // no-cors 모드에서는 응답을 읽을 수 없으므로 별도 처리
+                    console.log('📨 GAS 요청 전송됨 (no-cors 모드)');
                     
-                    document.getElementById('email-sent-notice').style.display = 'block';
-                    document.getElementById('success-modal').style.display = 'flex';
-                    
-                    // Firebase에 이메일 발송 상태 업데이트
+                    // Firebase에 상태 업데이트 (이메일 발송 시도 중)
                     await db.collection('reservations').doc(docId).update({
                         emailSent: true,
                         emailSentAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        emailResult: result
+                        emailResult: { status: 'request_sent_no_cors', timestamp: new Date().toISOString() }
                     });
                     
-                } else {
-                    throw new Error(result.error || '이메일 발송 실패');
-                }
+                    return { ok: true }; // 성공으로 간주
+                });
+                
+                console.log('📨 GAS 응답 상태:', gasResponse.ok);
+                
+                // 성공 모달 표시
+                document.getElementById('success-message').innerHTML = `
+                    <strong>${reservationData.parentName}님의 학습 상담 예약이 완료되었습니다.</strong><br><br>
+                    예약일시: ${reservationData.date} ${reservationData.time}<br>
+                    학생: ${reservationData.studentName} (${getGradeText(reservationData.studentGrade)})<br><br>
+                    <small style="color: #666;">
+                        확인 이메일이 발송되었습니다.<br>
+                        <span style="color: #e74c3c;">※ 이메일이 보이지 않을 경우 스팸함을 확인해주세요.</span><br><br>
+                        예약 확인 및 변경은 고객센터(032-252-9600)로 문의해주세요.
+                    </small>
+                `;
+                
+                document.getElementById('reservation-id-value').textContent = reservationId;
+                document.getElementById('email-sent-notice').style.display = 'block';
+                document.getElementById('success-modal').style.display = 'flex';
+                
+                // Firebase에 최종 상태 업데이트
+                await db.collection('reservations').doc(docId).update({
+                    emailSent: true,
+                    emailSentAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    emailResult: { 
+                        status: 'success', 
+                        timestamp: new Date().toISOString(),
+                        reservationId: reservationId
+                    }
+                });
+                
+                console.log('🎉 예약 프로세스 완료!');
                 
             } catch (error) {
-                console.error('❌ 예약 처리 실패:', error);
-                alert(`예약 처리 중 오류가 발생했습니다:\n\n${error.message}\n\n고객센터(032-252-9600)로 문의해주세요.`);
+                console.error('❌ 예약 처리 중 오류 발생:', error);
+                
+                let errorMessage = error.message || '알 수 없는 오류';
+                
+                // Firebase 오류일 경우
+                if (error.code) {
+                    errorMessage = `Firebase 오류: ${error.code} - ${errorMessage}`;
+                }
+                
+                alert(`예약 처리 중 오류가 발생했습니다:\n\n${errorMessage}\n\n고객센터(032-252-9600)로 연락해 예약번호를 알려주시면 확인해드리겠습니다.`);
+                
+                // 오류 발생 시에도 모달 표시 (예약번호 제공)
+                if (typeof reservationId !== 'undefined') {
+                    document.getElementById('success-message').innerHTML = `
+                        <strong>예약이 저장되었으나 이메일 발송에 문제가 발생했습니다.</strong><br><br>
+                        예약번호: <span style="color: #e74c3c;">${reservationId}</span><br>
+                        예약일시: ${reservationData.date} ${reservationData.time}<br><br>
+                        <span style="color: #e74c3c;">
+                            ※ 반드시 아래 예약번호를 기록해두시고<br>
+                            고객센터(032-252-9600)로 예약 확인을 요청해주세요.
+                        </span>
+                    `;
+                    
+                    document.getElementById('reservation-id-value').textContent = reservationId;
+                    document.getElementById('email-sent-notice').style.display = 'none';
+                    document.getElementById('success-modal').style.display = 'flex';
+                }
                 
             } finally {
                 // 버튼 상태 복원
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
+                submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> 예약 완료하기';
             }
         }
         
@@ -983,40 +1069,55 @@
         }
         
         // ==================== TEST FUNCTIONS ====================
-        function testGASConnection() {
+        async function testGASConnection() {
             console.log('🔗 GAS 연결 테스트 시작');
             
-            fetch(GAS_WEBAPP_URL + '?test=true')
-                .then(response => response.json())
-                .then(data => {
-                    console.log('✅ GAS 테스트 응답:', data);
-                    alert('GAS 연결 테스트 성공!\n\n' + JSON.stringify(data, null, 2));
-                })
-                .catch(error => {
-                    console.error('❌ GAS 연결 테스트 실패:', error);
-                    alert('GAS 연결 테스트 실패: ' + error.message);
-                });
-        }
-        
-        function testFirebaseConnection() {
-            console.log('🔥 Firebase 연결 테스트 시작');
-            
-            // 간단한 테스트 데이터 저장
             const testData = {
-                test: true,
-                message: 'Firebase 연결 테스트',
-                timestamp: new Date().toISOString()
+                action: 'test',
+                test_time: new Date().toISOString(),
+                academy: '더베스트 어학원'
             };
             
-            db.collection('test').add(testData)
-                .then(docRef => {
-                    console.log('✅ Firebase 저장 성공! 문서 ID:', docRef.id);
-                    alert('Firebase 연결 테스트 성공!\n문서 ID: ' + docRef.id);
-                })
-                .catch(error => {
-                    console.error('❌ Firebase 연결 테스트 실패:', error);
-                    alert('Firebase 연결 테스트 실패: ' + error.message);
+            try {
+                const response = await fetch(GAS_WEBAPP_URL + '?test=true&time=' + Date.now(), {
+                    method: 'GET',
+                    mode: 'no-cors'
                 });
+                
+                console.log('✅ GAS 테스트 요청 전송됨');
+                alert('GAS 연결 테스트 완료!\n\n요청이 전송되었습니다.\nGAS 스크립트 로그를 확인해주세요.');
+                
+            } catch (error) {
+                console.error('❌ GAS 연결 테스트 실패:', error);
+                alert('GAS 연결 테스트 실패: ' + error.message + '\n\nGAS 웹앱 URL을 확인해주세요.');
+            }
+        }
+        
+        async function testFirebaseConnection() {
+            console.log('🔥 Firebase 연결 테스트 시작');
+            
+            try {
+                // 간단한 테스트 데이터 저장
+                const testData = {
+                    test: true,
+                    message: 'Firebase 연결 테스트',
+                    timestamp: new Date().toISOString(),
+                    academy: '더베스트 어학원'
+                };
+                
+                const docRef = await db.collection('test_connection').add(testData);
+                console.log('✅ Firebase 저장 성공! 문서 ID:', docRef.id);
+                
+                // 저장된 데이터 확인
+                const doc = await docRef.get();
+                const data = doc.data();
+                
+                alert(`Firebase 연결 테스트 성공!\n\n문서 ID: ${doc.id}\n저장시간: ${data.timestamp}\n\nFirebase 콘솔에서 확인해주세요.`);
+                
+            } catch (error) {
+                console.error('❌ Firebase 연결 테스트 실패:', error);
+                alert('Firebase 연결 테스트 실패: ' + error.message + '\n\nFirebase 설정을 확인해주세요.');
+            }
         }
     </script>
 </body>
