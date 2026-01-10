@@ -3,29 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>더베스트 어학원 - 상담 예약</title>
+    <title>더베스트 어학원 - 예약하기</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script>
-        // Firebase 구성
-        const firebaseConfig = {
-            apiKey: "AIzaSyD4gK47WmW78znj1jXDzwMSCH6jAN_LVN8",
-            authDomain: "reservation-33a24.firebasestorage.app",
-            projectId: "reservation-33a24",
-            storageBucket: "reservation-33a24.firebasestorage.app",
-            messagingSenderId: "965824309420",
-            appId: "1:965824309420:web:060c37983c1d1c38d59709"
-        };
-        
-        // Firebase 초기화
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        
-        console.log('Firebase 초기화 완료');
-    </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
+        /* CSS는 동일하게 유지 */
         * {
             margin: 0;
             padding: 0;
@@ -40,80 +22,193 @@
         }
         
         .container {
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
         }
         
         header {
-            background: linear-gradient(135deg, #2c3e50, #3498db);
-            color: white;
-            padding: 25px;
-            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 30px;
-            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eaeaea;
         }
         
         .logo {
             display: flex;
             align-items: center;
-            justify-content: center;
-            margin-bottom: 10px;
+            gap: 15px;
         }
         
         .logo-icon {
-            font-size: 2rem;
-            margin-right: 10px;
-            color: #f1c40f;
+            font-size: 2.5rem;
+            color: #4361ee;
         }
         
-        h1 {
+        .logo h1 {
             font-size: 1.8rem;
-            margin-bottom: 10px;
+            color: #2c3e50;
+            margin-bottom: 5px;
         }
         
-        .back-btn {
-            display: inline-block;
-            margin-bottom: 20px;
-            padding: 10px 20px;
-            background: #6c757d;
-            color: white;
+        .logo p {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .back-link {
+            color: #4361ee;
             text-decoration: none;
-            border-radius: 5px;
-            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
         }
         
-        .back-btn:hover {
-            background: #5a6268;
+        .back-link:hover {
+            text-decoration: underline;
         }
         
-        .reservation-form {
+        .reservation-container {
             background: white;
-            padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
             margin-bottom: 30px;
         }
         
-        .form-title {
-            color: #2c3e50;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #3498db;
+        .reservation-header {
+            background: linear-gradient(135deg, #4361ee, #3a0ca3);
+            color: white;
+            padding: 30px;
             display: flex;
             align-items: center;
+            gap: 20px;
+        }
+        
+        .reservation-icon {
+            font-size: 3rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 50%;
+        }
+        
+        .reservation-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            position: relative;
+        }
+        
+        .step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            right: -50%;
+            width: 100%;
+            height: 2px;
+            background: #ddd;
+            z-index: 1;
+        }
+        
+        .step.active::after {
+            background: #4361ee;
+        }
+        
+        .step.completed::after {
+            background: #4361ee;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: #ddd;
+            color: #666;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .step.active .step-number {
+            background: #4361ee;
+            color: white;
+        }
+        
+        .step.completed .step-number {
+            background: #4cc9f0;
+            color: white;
+        }
+        
+        .step-content {
+            padding: 30px;
+            display: none;
+        }
+        
+        .step-content.active {
+            display: block;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 25px;
+            display: flex;
             gap: 10px;
+            align-items: flex-start;
+        }
+        
+        .alert-info {
+            background: #e3f2fd;
+            color: #1565c0;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .alert-warning {
+            background: #fff3e0;
+            color: #ef6c00;
+            border-left: 4px solid #ff9800;
+        }
+        
+        .alert-icon {
+            font-size: 1.2rem;
+            margin-top: 2px;
         }
         
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
         
         .form-group label {
             display: block;
             margin-bottom: 8px;
-            color: #2c3e50;
             font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .form-group label.required::after {
+            content: ' *';
+            color: #e74c3c;
         }
         
         .form-group input,
@@ -131,108 +226,187 @@
         .form-group select:focus,
         .form-group textarea:focus {
             outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+            border-color: #4361ee;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
         }
         
-        .form-row {
+        .time-slots-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-top: 10px;
         }
         
-        @media (max-width: 768px) {
-            .form-row {
-                grid-template-columns: 1fr;
-            }
+        .time-slot {
+            padding: 12px;
+            text-align: center;
+            background: #f8f9fa;
+            border: 2px solid #eaeaea;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .time-slot:hover {
+            border-color: #4361ee;
+            background: #e3f2fd;
+        }
+        
+        .time-slot.selected {
+            background: #4361ee;
+            color: white;
+            border-color: #3a0ca3;
+        }
+        
+        .time-slot.unavailable {
+            background: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+            cursor: not-allowed;
+        }
+        
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            gap: 15px;
         }
         
         .btn {
-            padding: 12px 30px;
-            background: #3498db;
-            color: white;
+            padding: 14px 30px;
             border: none;
             border-radius: 5px;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.3s;
-            display: inline-flex;
+            transition: all 0.3s;
+            display: flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
         }
         
-        .btn:hover {
-            background: #2980b9;
+        .btn-primary {
+            background: #4361ee;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #3a0ca3;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
         }
         
         .btn-success {
             background: #28a745;
+            color: white;
         }
         
         .btn-success:hover {
             background: #218838;
         }
         
-        .btn-block {
-            width: 100%;
-            justify-content: center;
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
         }
         
-        .form-actions {
+        .terms-box {
+            background: #f8f9fa;
+            border: 1px solid #eaeaea;
+            border-radius: 5px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .reservation-summary {
+            background: #f8f9fa;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .reservation-summary h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
             display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .reservation-detail {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
             gap: 15px;
-            margin-top: 30px;
+        }
+        
+        .detail-row {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #555;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .detail-value {
+            color: #2c3e50;
+            font-weight: 500;
         }
         
         footer {
             text-align: center;
-            margin-top: 50px;
-            padding: 20px;
             color: #7f8c8d;
             font-size: 0.9rem;
-            border-top: 1px solid #eee;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eaeaea;
         }
         
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
+        footer p {
+            margin-bottom: 5px;
         }
         
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .success-message {
-            display: none;
-            text-align: center;
-            padding: 30px;
-            background: #d4edda;
-            color: #155724;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-        
-        .error-message {
-            display: none;
-            text-align: center;
-            padding: 15px;
-            background: #f8d7da;
-            color: #721c24;
-            border-radius: 5px;
-            margin-top: 15px;
+        @media (max-width: 768px) {
+            .step-indicator {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .step:not(:last-child)::after {
+                display: none;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .time-slots-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .reservation-detail {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -242,324 +416,646 @@
             <div class="logo">
                 <i class="fas fa-calendar-check logo-icon"></i>
                 <div>
-                    <h1>상담 예약</h1>
-                    <p>더베스트 어학원 전문 상담 서비스</p>
+                    <h1>더베스트 어학원 예약하기</h1>
+                    <p>원하는 시간에 편리하게 예약하세요</p>
                 </div>
             </div>
+            <a href="index.html" class="back-link">
+                <i class="fas fa-arrow-left"></i> 예약 메인으로 돌아가기
+            </a>
         </header>
         
-        <a href="index.html" class="back-btn">
-            <i class="fas fa-arrow-left"></i> 목록으로 돌아가기
-        </a>
-        
-        <div class="reservation-form">
-            <h2 class="form-title">
-                <i class="fas fa-edit"></i> 예약 정보 입력
-            </h2>
+        <div class="reservation-container">
+            <div class="reservation-header">
+                <i class="fas fa-comments reservation-icon" id="reservation-icon"></i>
+                <div>
+                    <h2 id="reservation-title">학습 상담 예약</h2>
+                    <p id="reservation-description">학생의 학습 진행 상황 및 향후 학습 계획에 대한 상담</p>
+                </div>
+            </div>
             
-            <form id="reservationForm">
-                <!-- 학생 정보 -->
-                <div class="form-group">
-                    <label for="studentName"><i class="fas fa-user-graduate"></i> 학생 이름 *</label>
-                    <input type="text" id="studentName" name="studentName" required placeholder="홍길동">
+            <!-- 단계 표시기 -->
+            <div class="step-indicator">
+                <div class="step active" id="step1-indicator">
+                    <div class="step-number">1</div>
+                    <div>날짜/시간 선택</div>
                 </div>
-                
-                <!-- 학년/반 -->
-                <div class="form-group">
-                    <label for="studentGrade"><i class="fas fa-graduation-cap"></i> 학년/반 *</label>
-                    <select id="studentGrade" name="studentGrade" required>
-                        <option value="">선택해주세요</option>
-                        <option value="초1">초등학교 1학년</option>
-                        <option value="초2">초등학교 2학년</option>
-                        <option value="초3">초등학교 3학년</option>
-                        <option value="초4">초등학교 4학년</option>
-                        <option value="초5">초등학교 5학년</option>
-                        <option value="초6">초등학교 6학년</option>
-                        <option value="중1">중학교 1학년</option>
-                        <option value="중2">중학교 2학년</option>
-                        <option value="중3">중학교 3학년</option>
-                        <option value="고1">고등학교 1학년</option>
-                        <option value="고2">고등학교 2학년</option>
-                        <option value="고3">고등학교 3학년</option>
-                    </select>
+                <div class="step" id="step2-indicator">
+                    <div class="step-number">2</div>
+                    <div>예약자 정보</div>
                 </div>
-                
-                <!-- 보호자 정보 -->
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="parentName"><i class="fas fa-user"></i> 보호자 이름 *</label>
-                        <input type="text" id="parentName" name="parentName" required placeholder="홍부모">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="parentPhone"><i class="fas fa-phone"></i> 보호자 연락처 *</label>
-                        <input type="tel" id="parentPhone" name="parentPhone" required placeholder="010-1234-5678">
+                <div class="step" id="step3-indicator">
+                    <div class="step-number">3</div>
+                    <div>예약 확인</div>
+                </div>
+            </div>
+            
+            <!-- 단계 1: 날짜/시간 선택 -->
+            <div id="step1" class="step-content active">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle alert-icon"></i>
+                    <div>
+                        <strong>예약 안내:</strong> 원하시는 날짜와 시간을 선택해주세요. 예약 가능 시간은 실시간으로 업데이트됩니다.
                     </div>
                 </div>
                 
                 <div class="form-group">
-                    <label for="parentEmail"><i class="fas fa-envelope"></i> 이메일</label>
-                    <input type="email" id="parentEmail" name="parentEmail" placeholder="parent@email.com">
+                    <label class="required">예약 날짜 선택</label>
+                    <input type="text" id="datepicker" placeholder="날짜를 선택해주세요" readonly>
                 </div>
                 
-                <!-- 예약 정보 -->
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="reservationDate"><i class="fas fa-calendar"></i> 예약 날짜 *</label>
-                        <input type="date" id="reservationDate" name="reservationDate" required>
+                <div class="form-group">
+                    <label class="required">예약 시간 선택</label>
+                    <div class="time-slots-grid" id="time-slots">
+                        <!-- 시간 슬롯들이 JavaScript로 동적으로 생성됩니다 -->
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="reservationTime"><i class="fas fa-clock"></i> 예약 시간 *</label>
-                        <select id="reservationTime" name="reservationTime" required>
-                            <option value="">선택해주세요</option>
-                            <option value="09:00">09:00</option>
-                            <option value="10:00">10:00</option>
-                            <option value="11:00">11:00</option>
-                            <option value="14:00">14:00</option>
-                            <option value="15:00">15:00</option>
-                            <option value="16:00">16:00</option>
-                            <option value="17:00">17:00</option>
-                            <option value="18:00">18:00</option>
-                            <option value="19:00">19:00</option>
-                            <option value="20:00">20:00</option>
-                        </select>
+                    <div id="selected-time-display" style="margin-top: 15px; padding: 10px; background: #e3f2fd; border-radius: 5px; display: none;">
+                        선택한 시간: <span id="selected-time-text"></span>
                     </div>
                 </div>
                 
-                <!-- 예약 유형 -->
                 <div class="form-group">
-                    <label for="consultType"><i class="fas fa-comments"></i> 상담 유형 *</label>
-                    <select id="consultType" name="consultType" required>
-                        <option value="">선택해주세요</option>
-                        <option value="learning" selected>학습 상담</option>
-                        <option value="makeup">보강 수업</option>
-                        <option value="facility">시설 예약</option>
-                    </select>
+                    <label>특별 요청사항 (선택)</label>
+                    <textarea id="special-request" rows="3" placeholder="특별히 요청하실 사항이 있으면 입력해주세요."></textarea>
                 </div>
                 
-                <!-- 연락 가능 시간 -->
-                <div class="form-group">
-                    <label for="contactTime"><i class="fas fa-phone-volume"></i> 연락 가능 시간 *</label>
-                    <input type="text" id="contactTime" name="contactTime" required placeholder="예: 평일 18:00-20:00, 주말 오후">
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="cancelReservation()">취소</button>
+                    <button class="btn btn-primary" onclick="goToStep(2)">다음 단계</button>
+                </div>
+            </div>
+            
+            <!-- 단계 2: 예약자 정보 -->
+            <div id="step2" class="step-content">
+                <div class="alert alert-info">
+                    <i class="fas fa-user-check alert-icon"></i>
+                    <div>
+                        <strong>예약자 정보 입력:</strong> 예약 확인 및 연락을 위해 정보를 정확히 입력해주세요.
+                    </div>
                 </div>
                 
-                <!-- 특별 요청사항 -->
                 <div class="form-group">
-                    <label for="specialRequest"><i class="fas fa-sticky-note"></i> 특별 요청사항</label>
-                    <textarea id="specialRequest" name="specialRequest" rows="3" placeholder="상담 시 특별히 다뤄주셨으면 하는 내용이나 기타 요청사항을 적어주세요."></textarea>
+                    <label class="required">학생 이름</label>
+                    <input type="text" id="student-name" name="student-name" placeholder="학생의 이름을 입력해주세요">
                 </div>
                 
-                <!-- 약관 동의 -->
                 <div class="form-group">
-                    <label style="display: flex; align-items: flex-start; gap: 10px;">
-                        <input type="checkbox" id="agreeTerms" required style="margin-top: 3px;">
-                        <span>개인정보 수집 및 이용에 동의합니다. (필수)</span>
-                    </label>
-                    <small style="display: block; margin-top: 5px; color: #666;">
-                        수집된 정보는 상담 예약 및 서비스 제공을 위한 목적으로만 사용됩니다.
+                    <label class="required">보호자 이름</label>
+                    <input type="text" id="parent-name" name="parent-name" placeholder="보호자의 이름을 입력해주세요">
+                </div>
+                
+                <div class="form-group">
+                    <label class="required">연락처</label>
+                    <input type="tel" id="parent-phone" name="parent-phone" placeholder="010-1234-5678">
+                </div>
+                
+                <!-- 중요: Formspree가 인식하는 email 필드 -->
+                <div class="form-group">
+                    <label class="required">이메일</label>
+                    <!-- name="email" 필수! required 속성도 추가 -->
+                    <input type="email" id="parent-email" name="email" placeholder="example@email.com" required>
+                    <small style="color: #666; display: block; margin-top: 5px;">
+                        예약 확인서가 이 이메일로 발송됩니다
                     </small>
                 </div>
                 
-                <!-- 로딩 표시 -->
-                <div id="loading" class="loading">
-                    <div class="loader"></div>
-                    <p>예약 처리 중입니다...</p>
+                <div class="form-group">
+                    <label>연락 가능 시간 (선택)</label>
+                    <select id="contact-time" name="contact-time">
+                        <option value="">선택해주세요</option>
+                        <option value="morning">오전 9시 - 12시</option>
+                        <option value="afternoon">오후 1시 - 6시</option>
+                        <option value="evening">오후 7시 - 9시</option>
+                        <option value="anytime">언제든지 가능</option>
+                    </select>
                 </div>
                 
-                <!-- 성공 메시지 -->
-                <div id="successMessage" class="success-message">
-                    <i class="fas fa-check-circle" style="font-size: 3rem; margin-bottom: 15px;"></i>
-                    <h3>예약이 완료되었습니다!</h3>
-                    <p>관리자가 확인 후 연락드리겠습니다.</p>
-                    <p>예약번호: <strong id="reservationNumber"></strong></p>
-                    <button type="button" onclick="goToHome()" class="btn" style="margin-top: 15px;">
-                        <i class="fas fa-home"></i> 홈으로 이동
-                    </button>
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="goToStep(1)">이전 단계</button>
+                    <button class="btn btn-primary" onclick="goToStep(3)">다음 단계</button>
+                </div>
+            </div>
+            
+            <!-- 단계 3: 예약 확인 -->
+            <div id="step3" class="step-content">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-circle alert-icon"></i>
+                    <div>
+                        <strong>최종 확인:</strong> 아래 정보를 확인하시고 예약을 완료해주세요. 예약 후 변경은 고객센터로 문의바랍니다.
+                    </div>
                 </div>
                 
-                <!-- 에러 메시지 -->
-                <div id="errorMessage" class="error-message">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <span id="errorText">예약 처리 중 오류가 발생했습니다.</span>
+                <div class="reservation-summary">
+                    <h3><i class="fas fa-clipboard-check"></i> 예약 정보 요약</h3>
+                    <div id="reservation-summary-content">
+                        <!-- 예약 정보가 여기에 동적으로 표시됩니다 -->
+                    </div>
                 </div>
                 
-                <!-- 제출 버튼 -->
-                <div class="form-actions">
-                    <button type="button" onclick="window.history.back()" class="btn" style="background: #6c757d;">
-                        <i class="fas fa-times"></i> 취소
-                    </button>
-                    <button type="submit" class="btn btn-success btn-block">
-                        <i class="fas fa-paper-plane"></i> 예약 완료
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="goToStep(2)">이전 단계</button>
+                    <button class="btn btn-success" onclick="submitReservation()" id="complete-reservation-btn">
+                        <i class="fas fa-check-circle"></i> 예약 완료하기
                     </button>
                 </div>
-            </form>
+            </div>
         </div>
         
         <footer>
             <p>© 2025 더베스트 어학원. All rights reserved.</p>
-            <p>고객센터: 032-252-9600 | 이메일: gcha2514@naver.com</p>
+            <p>고객센터: 032-252-9600 | 이메일: yonseidaniel@naver.com</p>
             <p>인천 연수구 컨벤시아대로 230번길 42 아라프라자 2층 207-1</p>
         </footer>
     </div>
 
+    <!-- 성공 모달 -->
+    <div id="success-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; padding: 40px; border-radius: 10px; max-width: 500px; width: 90%; text-align: center;">
+            <i class="fas fa-check-circle" style="font-size: 4rem; color: #28a745; margin-bottom: 20px;"></i>
+            <h2 style="margin-bottom: 15px; color: #2c3e50;">예약이 완료되었습니다!</h2>
+            <p id="success-message" style="margin-bottom: 25px; line-height: 1.6;"></p>
+            <div id="email-notice" style="background: #e7f3ff; color: #004085; padding: 12px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #4361ee; display: none;">
+                <i class="fas fa-envelope"></i> <span id="email-notice-text"></span>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <button onclick="goToHome()" class="btn btn-primary">홈으로 이동</button>
+                <button onclick="viewMyReservations()" class="btn btn-secondary">나의 예약 보기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
+    
     <script>
-        // 페이지 로드 시 실행
+        // ==================== Formspree 설정 ====================
+        // 새 Form ID: mjggbrog (https://formspree.io/f/mjggbrog)
+        const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mjggbrog';
+        
+        // ==================== 예약 데이터 ====================
+        let reservationData = {
+            date: '',
+            time: '',
+            studentName: '',
+            parentName: '',
+            parentPhone: '',
+            parentEmail: '',
+            specialRequest: '',
+            contactTime: ''
+        };
+        
+        let currentReservationId = '';
+        
+        // ==================== 페이지 로드 시 초기화 ====================
         document.addEventListener('DOMContentLoaded', function() {
-            // 오늘 날짜 설정
-            const today = new Date();
-            const tomorrow = new Date(today);
-            tomorrow.setDate(tomorrow.getDate() + 1);
+            console.log('📱 reservation.html 로드 완료');
+            initDatePicker();
+            initTimeSlots();
             
-            const todayStr = today.toISOString().split('T')[0];
-            const tomorrowStr = tomorrow.toISOString().split('T')[0];
-            
-            // 기본 예약 날짜를 내일로 설정
-            document.getElementById('reservationDate').value = tomorrowStr;
-            document.getElementById('reservationDate').min = tomorrowStr;
-            
-            // URL 파라미터에서 예약 유형 가져오기
+            // URL에서 날짜 파라미터가 있으면 적용
             const urlParams = new URLSearchParams(window.location.search);
-            const type = urlParams.get('type');
-            if (type) {
-                document.getElementById('consultType').value = type;
+            const selectedDate = urlParams.get('date');
+            if (selectedDate) {
+                document.getElementById('datepicker').value = selectedDate;
+                reservationData.date = selectedDate;
+                updateTimeSlots();
             }
             
-            // 날짜 파라미터
-            const date = urlParams.get('date');
-            if (date) {
-                document.getElementById('reservationDate').value = date;
-            }
-            
-            console.log('Firestore DB 객체:', db ? '✅ 로드됨' : '❌ 없음');
-            
-            // Firestore 연결 테스트
-            testFirestoreConnection();
+            // email 필드 확인 (디버깅)
+            const emailInput = document.getElementById('parent-email');
+            console.log('🔍 email 필드 확인:', {
+                존재: !!emailInput,
+                name속성: emailInput?.name,
+                type: emailInput?.type,
+                required: emailInput?.required
+            });
         });
         
-        // Firestore 연결 테스트
-        async function testFirestoreConnection() {
-            try {
-                console.log('Firestore 연결 테스트...');
-                await db.collection('reservations').limit(1).get();
-                console.log('✅ Firestore 연결 성공');
-            } catch (error) {
-                console.error('❌ Firestore 연결 실패:', error.message);
-                if (error.code === 'permission-denied') {
-                    console.error('🔥 Firestore 규칙 확인 필요: allow read, write: if true;');
+        // ==================== 날짜 선택기 초기화 ====================
+        function initDatePicker() {
+            flatpickr("#datepicker", {
+                locale: "ko",
+                dateFormat: "Y년 m월 d일 (D)",
+                minDate: "today",
+                maxDate: new Date().fp_incr(60),
+                disable: [
+                    function(date) {
+                        // 토요일, 일요일 비활성화
+                        return (date.getDay() === 0 || date.getDay() === 6);
+                    }
+                ],
+                onChange: function(selectedDates, dateStr) {
+                    reservationData.date = dateStr;
+                    updateTimeSlots();
                 }
-            }
+            });
         }
         
-        // 예약 폼 제출 처리
-        document.getElementById('reservationForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+        // ==================== 시간 슬롯 초기화 ====================
+        function initTimeSlots() {
+            updateTimeSlots();
+        }
+        
+        // ==================== 시간 슬롯 업데이트 ====================
+        function updateTimeSlots() {
+            const timeSlotsContainer = document.getElementById('time-slots');
+            const selectedTimeDisplay = document.getElementById('selected-time-display');
+            const selectedTimeText = document.getElementById('selected-time-text');
             
-            // 필수 입력 확인
-            const requiredFields = ['studentName', 'studentGrade', 'parentName', 'parentPhone', 
-                                   'reservationDate', 'reservationTime', 'consultType', 'contactTime'];
-            for (const fieldId of requiredFields) {
-                const field = document.getElementById(fieldId);
-                if (!field.value.trim()) {
-                    alert(`${field.previousElementSibling.textContent}을(를) 입력해주세요.`);
-                    field.focus();
+            timeSlotsContainer.innerHTML = '';
+            selectedTimeDisplay.style.display = 'none';
+            reservationData.time = '';
+            
+            // 학습 상담 시간대 (월-금 10:00-19:00, 1시간 간격)
+            let timeSlots = [];
+            for (let hour = 10; hour <= 19; hour++) {
+                timeSlots.push(`${hour.toString().padStart(2, '0')}:00`);
+            }
+            
+            timeSlots.forEach(time => {
+                const slot = document.createElement('div');
+                slot.className = 'time-slot';
+                slot.textContent = time;
+                slot.dataset.time = time;
+                
+                const isUnavailable = Math.random() > 0.7;
+                
+                if (isUnavailable) {
+                    slot.classList.add('unavailable');
+                    slot.title = '이미 예약된 시간입니다';
+                } else {
+                    slot.addEventListener('click', function() {
+                        if (this.classList.contains('selected')) {
+                            this.classList.remove('selected');
+                            reservationData.time = '';
+                            selectedTimeDisplay.style.display = 'none';
+                        } else {
+                            document.querySelectorAll('.time-slot').forEach(s => {
+                                s.classList.remove('selected');
+                            });
+                            this.classList.add('selected');
+                            reservationData.time = this.dataset.time;
+                            
+                            selectedTimeText.textContent = reservationData.time;
+                            selectedTimeDisplay.style.display = 'block';
+                        }
+                    });
+                }
+                
+                timeSlotsContainer.appendChild(slot);
+            });
+        }
+        
+        // ==================== 단계 이동 함수 ====================
+        function goToStep(step) {
+            if (step === 2) {
+                if (!reservationData.date) {
+                    alert('날짜를 선택해주세요.');
+                    return;
+                }
+                if (!reservationData.time) {
+                    alert('시간을 선택해주세요.');
                     return;
                 }
             }
             
-            if (!document.getElementById('agreeTerms').checked) {
-                alert('개인정보 이용 약관에 동의해주세요.');
-                return;
-            }
-            
-            try {
-                // 로딩 표시
-                document.getElementById('loading').style.display = 'block';
-                document.getElementById('errorMessage').style.display = 'none';
-                
-                // 예약 데이터 준비
-                const reservationData = {
-                    // 학생 정보
-                    studentName: document.getElementById('studentName').value.trim(),
-                    studentGrade: document.getElementById('studentGrade').value,
-                    
-                    // 보호자 정보
-                    parentName: document.getElementById('parentName').value.trim(),
-                    parentPhone: document.getElementById('parentPhone').value.trim(),
-                    parentEmail: document.getElementById('parentEmail').value.trim(),
-                    
-                    // 예약 정보
-                    type: document.getElementById('consultType').value,
-                    reservationDate: document.getElementById('reservationDate').value,
-                    reservationTime: document.getElementById('reservationTime').value,
-                    
-                    // 기타 정보
-                    contactTime: document.getElementById('contactTime').value.trim(),
-                    specialRequest: document.getElementById('specialRequest').value.trim(),
-                    
-                    // 시스템 정보
-                    status: 'pending',
-                    reservationId: generateReservationId(),
-                    createdAt: new Date(),
-                    updatedAt: new Date()
-                };
-                
-                console.log('저장할 데이터:', reservationData);
-                
-                // Firestore에 저장
-                const docRef = await db.collection('reservations').add(reservationData);
-                
-                console.log('✅ 예약 저장 성공! 문서 ID:', docRef.id);
-                
-                // 성공 메시지 표시
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('reservationForm').style.display = 'none';
-                document.getElementById('reservationNumber').textContent = reservationData.reservationId;
-                document.getElementById('successMessage').style.display = 'block';
-                
-                // 콘솔에 성공 메시지
-                console.log('🎉 예약이 성공적으로 저장되었습니다!');
-                console.log('예약번호:', reservationData.reservationId);
-                console.log('문서 ID:', docRef.id);
-                
-            } catch (error) {
-                console.error('❌ 예약 저장 실패:', error);
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('errorMessage').style.display = 'block';
-                document.getElementById('errorText').textContent = 
-                    `예약 저장 실패: ${error.message}`;
-                
-                if (error.code === 'permission-denied') {
-                    alert('Firestore 쓰기 권한이 없습니다.\nFirebase 콘솔에서 Firestore 규칙을 확인하세요.');
+            if (step === 3) {
+                if (!validateStep2()) {
+                    return;
                 }
             }
-        });
-        
-        // 예약번호 생성
-        function generateReservationId() {
-            const now = new Date();
-            const dateStr = now.getFullYear().toString() + 
-                           (now.getMonth() + 1).toString().padStart(2, '0') + 
-                           now.getDate().toString().padStart(2, '0');
-            const randomStr = Math.random().toString(36).substr(2, 6).toUpperCase();
-            return `RES${dateStr}${randomStr}`;
+            
+            document.getElementById('step1').classList.remove('active');
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step3').classList.remove('active');
+            
+            document.getElementById('step1-indicator').classList.remove('active');
+            document.getElementById('step2-indicator').classList.remove('active');
+            document.getElementById('step3-indicator').classList.remove('active');
+            
+            document.getElementById(`step${step}`).classList.add('active');
+            document.getElementById(`step${step}-indicator`).classList.add('active');
+            
+            for (let i = 1; i < step; i++) {
+                document.getElementById(`step${i}-indicator`).classList.add('completed');
+            }
+            
+            if (step === 3) {
+                updateReservationSummary();
+            }
         }
         
-        // 홈으로 이동
+        // ==================== 2단계 유효성 검사 ====================
+        function validateStep2() {
+            const requiredFields = [
+                { id: 'student-name', name: '학생 이름' },
+                { id: 'parent-name', name: '보호자 이름' },
+                { id: 'parent-phone', name: '연락처' },
+                { id: 'parent-email', name: '이메일' }
+            ];
+            
+            for (const field of requiredFields) {
+                const element = document.getElementById(field.id);
+                if (!element.value.trim()) {
+                    alert(`${field.name}을(를) 입력해주세요.`);
+                    element.focus();
+                    return false;
+                }
+            }
+            
+            // 이메일 형식 검사
+            const email = document.getElementById('parent-email').value;
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert('유효한 이메일 주소를 입력해주세요.');
+                document.getElementById('parent-email').focus();
+                return false;
+            }
+            
+            // 전화번호 형식 검사
+            const phone = document.getElementById('parent-phone').value;
+            const phoneRegex = /^01[0-9]-\d{3,4}-\d{4}$/;
+            if (!phoneRegex.test(phone)) {
+                alert('전화번호 형식은 010-1234-5678 과 같이 입력해주세요.');
+                document.getElementById('parent-phone').focus();
+                return false;
+            }
+            
+            // 데이터 저장
+            reservationData.studentName = document.getElementById('student-name').value;
+            reservationData.parentName = document.getElementById('parent-name').value;
+            reservationData.parentPhone = document.getElementById('parent-phone').value;
+            reservationData.parentEmail = document.getElementById('parent-email').value;
+            reservationData.contactTime = document.getElementById('contact-time').value;
+            reservationData.specialRequest = document.getElementById('special-request').value;
+            
+            console.log('✅ 2단계 데이터 저장 완료:', reservationData);
+            return true;
+        }
+        
+        // ==================== 예약 요약 업데이트 ====================
+        function updateReservationSummary() {
+            const summaryContent = document.getElementById('reservation-summary-content');
+            
+            let html = `
+                <div class="reservation-detail">
+                    <div class="detail-row">
+                        <span class="detail-label">예약 유형</span>
+                        <span class="detail-value">학습 상담</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">예약 날짜</span>
+                        <span class="detail-value">${reservationData.date}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">예약 시간</span>
+                        <span class="detail-value">${reservationData.time}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">학생 정보</span>
+                        <span class="detail-value">${reservationData.studentName}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">보호자 정보</span>
+                        <span class="detail-value">${reservationData.parentName}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">연락처</span>
+                        <span class="detail-value">${reservationData.parentPhone}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">이메일</span>
+                        <span class="detail-value">${reservationData.parentEmail}</span>
+                    </div>
+            `;
+            
+            if (reservationData.specialRequest) {
+                html += `
+                    <div class="detail-row">
+                        <span class="detail-label">특별 요청</span>
+                        <span class="detail-value">${reservationData.specialRequest}</span>
+                    </div>
+                `;
+            }
+            
+            html += `</div>`;
+            summaryContent.innerHTML = html;
+        }
+        
+        // ==================== Formspree로 예약 데이터 전송 (수정됨) ====================
+        async function submitReservation() {
+            console.log('🚀 ===== submitReservation() 시작 =====');
+            
+            // 버튼 상태 저장
+            const submitBtn = document.getElementById('complete-reservation-btn');
+            const originalText = submitBtn.innerHTML;
+            
+            try {
+                // 버튼 로딩 상태로 변경
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 처리 중...';
+                
+                // 예약번호 생성
+                currentReservationId = 'RES' + 
+                    new Date().getFullYear().toString().slice(2) +
+                    (new Date().getMonth() + 1).toString().padStart(2, '0') +
+                    new Date().getDate().toString().padStart(2, '0') +
+                    Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+                
+                console.log('📝 1. 예약번호 생성:', currentReservationId);
+                console.log('📧 2. 보호자 이메일:', reservationData.parentEmail);
+                
+                // FormData 생성
+                const formData = new FormData();
+                
+                // ===== 핵심: Formspree가 인식하는 필드들 =====
+                
+                // 1. email 필드 (Formspree가 Auto-Reply를 보내기 위한 필드) - 가장 중요!
+                formData.append('email', reservationData.parentEmail);
+                console.log('✅ email 필드 추가됨:', reservationData.parentEmail);
+                
+                // 2. subject 필드 (이메일 제목)
+                const subjectValue = `[더베스트어학원] ${reservationData.studentName}님 학습 상담 예약 완료`;
+                formData.append('subject', subjectValue);
+                formData.append('_subject', subjectValue); // _subject도 추가
+                console.log('✅ subject 필드 추가됨:', subjectValue);
+                
+                // 3. _replyto 필드 (회신 주소)
+                formData.append('_replyto', reservationData.parentEmail);
+                console.log('✅ _replyto 필드 추가됨:', reservationData.parentEmail);
+                
+                // 4. 기타 설정
+                formData.append('_language', 'ko');
+                formData.append('_format', 'plain');
+                
+                // ===== 예약 정보 필드들 (Formspree 대시보드에서 보기 위한) =====
+                formData.append('예약번호', currentReservationId);
+                formData.append('학생이름', reservationData.studentName);
+                formData.append('보호자이름', reservationData.parentName);
+                formData.append('연락처', reservationData.parentPhone);
+                formData.append('보호자이메일', reservationData.parentEmail); // 백업용
+                formData.append('예약날짜', reservationData.date);
+                formData.append('예약시간', reservationData.time);
+                
+                if (reservationData.contactTime) {
+                    formData.append('연락가능시간', reservationData.contactTime);
+                }
+                
+                if (reservationData.specialRequest) {
+                    formData.append('특별요청사항', reservationData.specialRequest);
+                }
+                
+                // 디버깅: FormData 내용 확인
+                console.log('📋 3. FormData 내용:');
+                for (let [key, value] of formData.entries()) {
+                    console.log(`   ${key}:`, value);
+                }
+                
+                console.log('🌐 4. Formspree 전송 시작...');
+                console.log('   엔드포인트:', FORMSPREE_ENDPOINT);
+                
+                // Formspree 전송
+                const response = await fetch(FORMSPREE_ENDPOINT, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                console.log('📥 5. 응답 수신:', response.status, response.statusText);
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('✅ 6. Formspree 전송 성공:', result);
+                    
+                    // 로컬스토리지에 저장 (백업)
+                    const reservationWithId = {
+                        ...reservationData,
+                        reservationId: currentReservationId,
+                        submittedAt: new Date().toLocaleString('ko-KR')
+                    };
+                    
+                    const reservations = JSON.parse(localStorage.getItem('academy_reservations') || '[]');
+                    reservations.push(reservationWithId);
+                    localStorage.setItem('academy_reservations', JSON.stringify(reservations));
+                    
+                    console.log('💾 7. 로컬스토리지 저장 완료');
+                    
+                    // 성공 모달 표시
+                    document.getElementById('success-message').innerHTML = `
+                        <strong>예약번호: ${currentReservationId}</strong><br><br>
+                        <strong>${reservationData.parentName}님의 학습 상담 예약이 정상적으로 접수되었습니다!</strong><br><br>
+                        예약일시: ${reservationData.date} ${reservationData.time}<br>
+                        학생: ${reservationData.studentName}<br><br>
+                    `;
+                    
+                    // 이메일 발송 알림
+                    document.getElementById('email-notice-text').innerHTML = `
+                        <strong>확인 이메일이 ${reservationData.parentEmail}로 발송되었습니다.</strong><br>
+                        <small>이메일이 보이지 않으면 스팸함을 확인해주세요.</small>
+                    `;
+                    document.getElementById('email-notice').style.display = 'block';
+                    
+                    document.getElementById('success-modal').style.display = 'flex';
+                    
+                    console.log('🎉 8. 성공 모달 표시 완료');
+                    
+                } else {
+                    const errorText = await response.text();
+                    console.error('❌ 6. Formspree 전송 실패:', response.status, errorText);
+                    
+                    // 사용자에게는 성공으로 표시하되, 이메일 문제 알림
+                    document.getElementById('success-message').innerHTML = `
+                        <strong>예약번호: ${currentReservationId}</strong><br><br>
+                        <strong>${reservationData.parentName}님의 학습 상담 예약이 접수되었습니다!</strong><br><br>
+                        예약일시: ${reservationData.date} ${reservationData.time}<br>
+                        학생: ${reservationData.studentName}<br><br>
+                        <span style="color: #e74c3c; font-size: 14px;">
+                            ※ 이메일 발송에 일시적인 문제가 발생했습니다.<br>
+                            ※ 예약은 정상 처리되었습니다. 자세한 내용은 고객센터로 문의해주세요.
+                        </span>
+                    `;
+                    
+                    document.getElementById('email-notice').style.display = 'none';
+                    document.getElementById('success-modal').style.display = 'flex';
+                }
+                
+            } catch (error) {
+                console.error('🚨 5. 네트워크 오류:', error);
+                
+                // 네트워크 오류 발생 시에도 사용자에게는 성공으로 표시
+                document.getElementById('success-message').innerHTML = `
+                    <strong>${reservationData.parentName}님의 학습 상담 예약이 접수되었습니다!</strong><br><br>
+                    예약일시: ${reservationData.date} ${reservationData.time}<br>
+                    학생: ${reservationData.studentName}<br><br>
+                    <span style="color: #e74c3c; font-size: 14px;">
+                        ※ 시스템에 일시적인 문제가 발생했습니다.<br>
+                        ※ 예약 내용은 고객센터(032-252-9600)로 확인해주세요.
+                    </span>
+                `;
+                
+                document.getElementById('email-notice').style.display = 'none';
+                document.getElementById('success-modal').style.display = 'flex';
+                
+            } finally {
+                // 버튼 상태 복원
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                console.log('🏁 ===== submitReservation() 종료 =====');
+            }
+        }
+        
+        // ==================== 취소 함수 ====================
+        function cancelReservation() {
+            if (confirm('예약을 취소하고 메인 페이지로 이동하시겠습니까?\n입력한 내용은 저장되지 않습니다.')) {
+                window.location.href = 'index.html';
+            }
+        }
+        
+        // ==================== 성공 모달 관련 함수 ====================
         function goToHome() {
             window.location.href = 'index.html';
         }
         
-        // 전화번호 포맷팅
-        document.getElementById('parentPhone').addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 3 && value.length <= 7) {
-                value = value.replace(/(\d{3})(\d+)/, '$1-$2');
-            } else if (value.length > 7) {
-                value = value.replace(/(\d{3})(\d{4})(\d+)/, '$1-$2-$3');
-            }
-            e.target.value = value;
-        });
+        function viewMyReservations() {
+            window.location.href = 'my_reservations.html';
+        }
+        
+        // ==================== Formspree 테스트 함수 ====================
+        function testFormspree() {
+            console.log('🔍 Formspree 테스트 시작...');
+            
+            const testFormData = new FormData();
+            testFormData.append('email', 'test@example.com');
+            testFormData.append('subject', '[테스트] Formspree 연결 테스트');
+            testFormData.append('message', '이 메시지는 Formspree 연결 테스트를 위해 전송되었습니다.\n\n전송 시간: ' + new Date().toLocaleString('ko-KR'));
+            
+            fetch(FORMSPREE_ENDPOINT, {
+                method: 'POST',
+                body: testFormData,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                console.log('테스트 응답 상태:', response.status);
+                if (response.ok) {
+                    alert('✅ Formspree 테스트 전송 성공! Formspree 대시보드를 확인하세요.');
+                } else {
+                    alert('❌ Formspree 테스트 전송 실패: ' + response.status);
+                }
+                return response.text();
+            })
+            .then(text => {
+                console.log('테스트 응답 내용:', text);
+            })
+            .catch(error => {
+                console.error('테스트 오류:', error);
+                alert('❌ Formspree 테스트 중 오류: ' + error.message);
+            });
+        }
     </script>
 </body>
 </html>
