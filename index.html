@@ -470,7 +470,7 @@
                 const docRef = await db.collection('reservations').add(reservationData);
                 console.log('✅ Firebase 저장 성공! 문서 ID:', docRef.id);
                 
-                // reply 페이지로 리다이렉트
+                // 같은 레포지토리 내의 reply.html로 리다이렉트
                 redirectToReplyPage(reservationData);
                 
             } catch (error) {
@@ -573,27 +573,34 @@
         
         // reply 페이지로 리다이렉트
         function redirectToReplyPage(reservationData) {
-            // URL 파라미터 생성
-            const params = new URLSearchParams({
-                reservationId: reservationData.reservationId,
-                studentName: reservationData.studentName,
-                parentName: reservationData.parentName,
-                parentEmail: reservationData.parentEmail,
-                parentPhone: reservationData.parentPhone,
-                studentGrade: reservationData.studentGrade,
-                reservationDate: reservationData.reservationDate,
-                reservationTime: reservationData.reservationTime,
-                consultType: reservationData.type,
-                contactTime: reservationData.contactTime,
-                specialRequest: reservationData.specialRequest || '',
-                source: 'reservation'
-            });
+            // URL 파라미터 생성 (값이 없는 경우 빈 문자열로 처리)
+            const params = new URLSearchParams();
             
-            // reply 사이트 URL
-            // 실제 reply 사이트 URL로 변경해야 합니다
-            const replyUrl = `https://rokyeah.github.io/reply/?${params.toString()}`;
+            // 모든 데이터 추가 (null 체크)
+            params.append('reservationId', reservationData.reservationId || '');
+            params.append('studentName', reservationData.studentName || '');
+            params.append('parentName', reservationData.parentName || '');
+            params.append('parentEmail', reservationData.parentEmail || '');
+            params.append('parentPhone', reservationData.parentPhone || '');
+            params.append('studentGrade', reservationData.studentGrade || '');
+            params.append('reservationDate', reservationData.reservationDate || '');
+            params.append('reservationTime', reservationData.reservationTime || '');
+            params.append('consultType', reservationData.type || '');
+            params.append('contactTime', reservationData.contactTime || '');
+            params.append('specialRequest', reservationData.specialRequest || '');
+            params.append('source', 'reservation');
+            
+            // 같은 레포지토리 내의 reply.html로 이동
+            const replyUrl = `reply.html?${params.toString()}`;
             
             console.log('🔀 reply 페이지로 리다이렉트:', replyUrl);
+            console.log('📤 전송되는 파라미터:');
+            for (let [key, value] of params.entries()) {
+                console.log(`  ${key}: ${value}`);
+            }
+            
+            // 확인용 alert
+            alert('예약이 성공적으로 저장되었습니다! 이메일 발송 페이지로 이동합니다.');
             
             // 리다이렉트
             window.location.href = replyUrl;
