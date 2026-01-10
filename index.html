@@ -8,23 +8,6 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script>
-        // Firebase 구성
-        const firebaseConfig = {
-            apiKey: "AIzaSyD4gK47WmW78znj1jXDzwMSCH6jAN_LVN8",
-            authDomain: "reservation-33a24.firebasestorage.app",
-            projectId: "reservation-33a24",
-            storageBucket: "reservation-33a24.firebasestorage.app",
-            messagingSenderId: "965824309420",
-            appId: "1:965824309420:web:060c37983c1d1c38d59709"
-        };
-        
-        // Firebase 초기화
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        
-        console.log('Firebase 초기화 완료');
-    </script>
     <style>
         * {
             margin: 0;
@@ -298,8 +281,11 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="parentEmail"><i class="fas fa-envelope"></i> 이메일</label>
-                    <input type="email" id="parentEmail" name="parentEmail" placeholder="parent@email.com">
+                    <label for="parentEmail"><i class="fas fa-envelope"></i> 이메일 *</label>
+                    <input type="email" id="parentEmail" name="parentEmail" required placeholder="parent@email.com">
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        예약 확인서가 이 이메일로 발송됩니다
+                    </small>
                 </div>
                 
                 <!-- 예약 정보 -->
@@ -367,17 +353,6 @@
                     <p>예약 처리 중입니다...</p>
                 </div>
                 
-                <!-- 성공 메시지 -->
-                <div id="successMessage" class="success-message">
-                    <i class="fas fa-check-circle" style="font-size: 3rem; margin-bottom: 15px;"></i>
-                    <h3>예약이 완료되었습니다!</h3>
-                    <p>관리자가 확인 후 연락드리겠습니다.</p>
-                    <p>예약번호: <strong id="reservationNumber"></strong></p>
-                    <button type="button" onclick="goToHome()" class="btn" style="margin-top: 15px;">
-                        <i class="fas fa-home"></i> 홈으로 이동
-                    </button>
-                </div>
-                
                 <!-- 에러 메시지 -->
                 <div id="errorMessage" class="error-message">
                     <i class="fas fa-exclamation-triangle"></i>
@@ -404,6 +379,28 @@
     </div>
 
     <script>
+        // Firebase 구성
+        const firebaseConfig = {
+            apiKey: "AIzaSyD4gK47WmW78znj1jXDzwMSCH6jAN_LVN8",
+            authDomain: "reservation-33a24.firebasestorage.app",
+            projectId: "reservation-33a24",
+            storageBucket: "reservation-33a24.firebasestorage.app",
+            messagingSenderId: "965824309420",
+            appId: "1:965824309420:web:060c37983c1d1c38d59709"
+        };
+        
+        // Firebase 초기화
+        let db;
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            db = firebase.firestore();
+            console.log('✅ Firebase 초기화 완료');
+        } catch (error) {
+            console.error('❌ Firebase 초기화 실패:', error);
+        }
+        
         // 페이지 로드 시 실행
         document.addEventListener('DOMContentLoaded', function() {
             // 오늘 날짜 설정
@@ -411,7 +408,6 @@
             const tomorrow = new Date(today);
             tomorrow.setDate(tomorrow.getDate() + 1);
             
-            const todayStr = today.toISOString().split('T')[0];
             const tomorrowStr = tomorrow.toISOString().split('T')[0];
             
             // 기본 예약 날짜를 내일로 설정
@@ -428,138 +424,180 @@
             // 날짜 파라미터
             const date = urlParams.get('date');
             if (date) {
-                document.getElementById('reservationDate').value = date;
-            }
-            
-            console.log('Firestore DB 객체:', db ? '✅ 로드됨' : '❌ 없음');
-            
-            // Firestore 연결 테스트
-            testFirestoreConnection();
-        });
-        
-        // Firestore 연결 테스트
-        async function testFirestoreConnection() {
-            try {
-                console.log('Firestore 연결 테스트...');
-                await db.collection('reservations').limit(1).get();
-                console.log('✅ Firestore 연결 성공');
-            } catch (error) {
-                console.error('❌ Firestore 연결 실패:', error.message);
-                if (error.code === 'permission-denied') {
-                    console.error('🔥 Firestore 규칙 확인 필요: allow read, write: if true;');
+                const selectedDate = new Date(date);
+                if (selectedDate >= tomorrow) {
+                    document.getElementById('reservationDate').value = date;
                 }
             }
-        }
+            
+            // 전화번호 포맷팅
+            document.getElementById('parentPhone').addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 3 && value.length <= 7) {
+                    value = value.replace(/(\d{3})(\d+)/, '$1-$2');
+                } else if (value.length > 7) {
+                    value = value.replace(/(\d{3})(\d{4})(\d+)/, '$1-$2-$3');
+                }
+                e.target.value = value;
+            });
+        });
         
         // 예약 폼 제출 처리
         document.getElementById('reservationForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            // 필수 입력 확인
-            const requiredFields = ['studentName', 'studentGrade', 'parentName', 'parentPhone', 
-                                   'reservationDate', 'reservationTime', 'consultType', 'contactTime'];
-            for (const fieldId of requiredFields) {
-                const field = document.getElementById(fieldId);
-                if (!field.value.trim()) {
-                    alert(`${field.previousElementSibling.textContent}을(를) 입력해주세요.`);
-                    field.focus();
-                    return;
-                }
-            }
+            // 로딩 표시
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
             
-            if (!document.getElementById('agreeTerms').checked) {
-                alert('개인정보 이용 약관에 동의해주세요.');
+            // 폼 유효성 검사
+            if (!validateForm()) {
+                document.getElementById('loading').style.display = 'none';
                 return;
             }
             
             try {
-                // 로딩 표시
-                document.getElementById('loading').style.display = 'block';
-                document.getElementById('errorMessage').style.display = 'none';
-                
                 // 예약 데이터 준비
-                const reservationData = {
-                    // 학생 정보
-                    studentName: document.getElementById('studentName').value.trim(),
-                    studentGrade: document.getElementById('studentGrade').value,
-                    
-                    // 보호자 정보
-                    parentName: document.getElementById('parentName').value.trim(),
-                    parentPhone: document.getElementById('parentPhone').value.trim(),
-                    parentEmail: document.getElementById('parentEmail').value.trim(),
-                    
-                    // 예약 정보
-                    type: document.getElementById('consultType').value,
-                    reservationDate: document.getElementById('reservationDate').value,
-                    reservationTime: document.getElementById('reservationTime').value,
-                    
-                    // 기타 정보
-                    contactTime: document.getElementById('contactTime').value.trim(),
-                    specialRequest: document.getElementById('specialRequest').value.trim(),
-                    
-                    // 시스템 정보
-                    status: 'pending',
-                    reservationId: generateReservationId(),
-                    createdAt: new Date(),
-                    updatedAt: new Date()
-                };
-                
-                console.log('저장할 데이터:', reservationData);
+                const reservationData = prepareReservationData();
+                console.log('📊 예약 데이터:', reservationData);
                 
                 // Firestore에 저장
+                if (!db) {
+                    throw new Error('Firebase가 초기화되지 않았습니다.');
+                }
+                
+                console.log('🔥 Firebase 저장 시작...');
                 const docRef = await db.collection('reservations').add(reservationData);
+                console.log('✅ Firebase 저장 성공! 문서 ID:', docRef.id);
                 
-                console.log('✅ 예약 저장 성공! 문서 ID:', docRef.id);
-                
-                // 성공 메시지 표시
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('reservationForm').style.display = 'none';
-                document.getElementById('reservationNumber').textContent = reservationData.reservationId;
-                document.getElementById('successMessage').style.display = 'block';
-                
-                // 콘솔에 성공 메시지
-                console.log('🎉 예약이 성공적으로 저장되었습니다!');
-                console.log('예약번호:', reservationData.reservationId);
-                console.log('문서 ID:', docRef.id);
+                // reply 페이지로 리다이렉트
+                redirectToReplyPage(reservationData);
                 
             } catch (error) {
-                console.error('❌ 예약 저장 실패:', error);
+                console.error('❌ 예약 처리 실패:', error);
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('errorMessage').style.display = 'block';
                 document.getElementById('errorText').textContent = 
-                    `예약 저장 실패: ${error.message}`;
+                    `예약 처리 중 오류가 발생했습니다: ${error.message}`;
                 
                 if (error.code === 'permission-denied') {
-                    alert('Firestore 쓰기 권한이 없습니다.\nFirebase 콘솔에서 Firestore 규칙을 확인하세요.');
+                    alert('Firestore 쓰기 권한이 없습니다. Firebase 콘솔에서 Firestore 규칙을 확인하세요.');
                 }
             }
         });
         
+        // 폼 유효성 검사
+        function validateForm() {
+            const requiredFields = [
+                { id: 'studentName', name: '학생 이름' },
+                { id: 'studentGrade', name: '학년/반' },
+                { id: 'parentName', name: '보호자 이름' },
+                { id: 'parentPhone', name: '보호자 연락처' },
+                { id: 'parentEmail', name: '이메일' },
+                { id: 'reservationDate', name: '예약 날짜' },
+                { id: 'reservationTime', name: '예약 시간' },
+                { id: 'consultType', name: '상담 유형' },
+                { id: 'contactTime', name: '연락 가능 시간' }
+            ];
+            
+            for (const field of requiredFields) {
+                const element = document.getElementById(field.id);
+                if (!element.value.trim()) {
+                    alert(`${field.name}을(를) 입력해주세요.`);
+                    element.focus();
+                    return false;
+                }
+            }
+            
+            // 이메일 형식 검사
+            const email = document.getElementById('parentEmail').value;
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert('유효한 이메일 주소를 입력해주세요.');
+                document.getElementById('parentEmail').focus();
+                return false;
+            }
+            
+            // 약관 동의 확인
+            if (!document.getElementById('agreeTerms').checked) {
+                alert('개인정보 이용 약관에 동의해주세요.');
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // 예약 데이터 준비
+        function prepareReservationData() {
+            // 예약번호 생성
+            const reservationId = generateReservationId();
+            
+            return {
+                // 학생 정보
+                studentName: document.getElementById('studentName').value.trim(),
+                studentGrade: document.getElementById('studentGrade').value,
+                
+                // 보호자 정보
+                parentName: document.getElementById('parentName').value.trim(),
+                parentPhone: document.getElementById('parentPhone').value.trim(),
+                parentEmail: document.getElementById('parentEmail').value.trim(),
+                
+                // 예약 정보
+                type: document.getElementById('consultType').value,
+                reservationDate: document.getElementById('reservationDate').value,
+                reservationTime: document.getElementById('reservationTime').value,
+                
+                // 기타 정보
+                contactTime: document.getElementById('contactTime').value.trim(),
+                specialRequest: document.getElementById('specialRequest').value.trim(),
+                
+                // 시스템 정보
+                status: 'pending',
+                reservationId: reservationId,
+                source: 'reservation_site',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                firebaseSaved: true
+            };
+        }
+        
         // 예약번호 생성
         function generateReservationId() {
             const now = new Date();
-            const dateStr = now.getFullYear().toString() + 
-                           (now.getMonth() + 1).toString().padStart(2, '0') + 
-                           now.getDate().toString().padStart(2, '0');
-            const randomStr = Math.random().toString(36).substr(2, 6).toUpperCase();
+            const dateStr = now.getFullYear().toString().slice(2) +
+                          (now.getMonth() + 1).toString().padStart(2, '0') +
+                          now.getDate().toString().padStart(2, '0');
+            const randomStr = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
             return `RES${dateStr}${randomStr}`;
         }
         
-        // 홈으로 이동
-        function goToHome() {
-            window.location.href = 'index.html';
+        // reply 페이지로 리다이렉트
+        function redirectToReplyPage(reservationData) {
+            // URL 파라미터 생성
+            const params = new URLSearchParams({
+                reservationId: reservationData.reservationId,
+                studentName: reservationData.studentName,
+                parentName: reservationData.parentName,
+                parentEmail: reservationData.parentEmail,
+                parentPhone: reservationData.parentPhone,
+                studentGrade: reservationData.studentGrade,
+                reservationDate: reservationData.reservationDate,
+                reservationTime: reservationData.reservationTime,
+                consultType: reservationData.type,
+                contactTime: reservationData.contactTime,
+                specialRequest: reservationData.specialRequest || '',
+                source: 'reservation'
+            });
+            
+            // reply 사이트 URL
+            // 실제 reply 사이트 URL로 변경해야 합니다
+            const replyUrl = `https://rokyeah.github.io/reply/?${params.toString()}`;
+            
+            console.log('🔀 reply 페이지로 리다이렉트:', replyUrl);
+            
+            // 리다이렉트
+            window.location.href = replyUrl;
         }
-        
-        // 전화번호 포맷팅
-        document.getElementById('parentPhone').addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 3 && value.length <= 7) {
-                value = value.replace(/(\d{3})(\d+)/, '$1-$2');
-            } else if (value.length > 7) {
-                value = value.replace(/(\d{3})(\d{4})(\d+)/, '$1-$2-$3');
-            }
-            e.target.value = value;
-        });
     </script>
 </body>
 </html>
