@@ -485,7 +485,7 @@
                 </div>
             </div>
             
-            <!-- 단계 2: 예약자 정보 (단순화됨) -->
+            <!-- 단계 2: 예약자 정보 -->
             <div id="step2" class="step-content">
                 <div class="alert alert-info">
                     <i class="fas fa-user-check alert-icon"></i>
@@ -496,28 +496,32 @@
                 
                 <div class="form-group">
                     <label class="required">학생 이름</label>
-                    <input type="text" id="student-name" placeholder="학생의 이름을 입력해주세요">
+                    <input type="text" id="student-name" name="student-name" placeholder="학생의 이름을 입력해주세요">
                 </div>
                 
                 <div class="form-group">
                     <label class="required">보호자 이름</label>
-                    <input type="text" id="parent-name" placeholder="보호자의 이름을 입력해주세요">
+                    <input type="text" id="parent-name" name="parent-name" placeholder="보호자의 이름을 입력해주세요">
                 </div>
                 
                 <div class="form-group">
                     <label class="required">연락처</label>
-                    <input type="tel" id="parent-phone" placeholder="010-1234-5678">
+                    <input type="tel" id="parent-phone" name="parent-phone" placeholder="010-1234-5678">
                 </div>
                 
+                <!-- 중요: Formspree가 인식하는 email 필드 -->
                 <div class="form-group">
                     <label class="required">이메일</label>
-                    <input type="email" id="parent-email" placeholder="example@email.com">
-                    <small style="color: #666; display: block; margin-top: 5px;">예약 확인서가 발송됩니다</small>
+                    <!-- name="email" 필수! required 속성도 추가 -->
+                    <input type="email" id="parent-email" name="email" placeholder="example@email.com" required>
+                    <small style="color: #666; display: block; margin-top: 5px;">
+                        예약 확인서가 이 이메일로 발송됩니다
+                    </small>
                 </div>
                 
                 <div class="form-group">
                     <label>연락 가능 시간 (선택)</label>
-                    <select id="contact-time">
+                    <select id="contact-time" name="contact-time">
                         <option value="">선택해주세요</option>
                         <option value="morning">오전 9시 - 12시</option>
                         <option value="afternoon">오후 1시 - 6시</option>
@@ -532,7 +536,7 @@
                 </div>
             </div>
             
-            <!-- 단계 3: 예약 확인 (개인정보 동의 삭제) -->
+            <!-- 단계 3: 예약 확인 -->
             <div id="step3" class="step-content">
                 <div class="alert alert-warning">
                     <i class="fas fa-exclamation-circle alert-icon"></i>
@@ -585,10 +589,11 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
     
     <script>
-        // Formspree 엔드포인트
-        const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mbdlnlzl';
+        // ==================== Formspree 설정 ====================
+        // 새 Form ID: mjggbrog (https://formspree.io/f/mjggbrog)
+        const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mjggbrog';
         
-        // 예약 데이터 (단순화됨)
+        // ==================== 예약 데이터 ====================
         let reservationData = {
             date: '',
             time: '',
@@ -600,11 +605,11 @@
             contactTime: ''
         };
         
-        // 현재 예약 ID 저장
         let currentReservationId = '';
         
-        // 페이지 로드 시 초기화
+        // ==================== 페이지 로드 시 초기화 ====================
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('📱 reservation.html 로드 완료');
             initDatePicker();
             initTimeSlots();
             
@@ -616,9 +621,18 @@
                 reservationData.date = selectedDate;
                 updateTimeSlots();
             }
+            
+            // email 필드 확인 (디버깅)
+            const emailInput = document.getElementById('parent-email');
+            console.log('🔍 email 필드 확인:', {
+                존재: !!emailInput,
+                name속성: emailInput?.name,
+                type: emailInput?.type,
+                required: emailInput?.required
+            });
         });
         
-        // 날짜 선택기 초기화
+        // ==================== 날짜 선택기 초기화 ====================
         function initDatePicker() {
             flatpickr("#datepicker", {
                 locale: "ko",
@@ -638,12 +652,12 @@
             });
         }
         
-        // 시간 슬롯 초기화
+        // ==================== 시간 슬롯 초기화 ====================
         function initTimeSlots() {
             updateTimeSlots();
         }
         
-        // 시간 슬롯 업데이트
+        // ==================== 시간 슬롯 업데이트 ====================
         function updateTimeSlots() {
             const timeSlotsContainer = document.getElementById('time-slots');
             const selectedTimeDisplay = document.getElementById('selected-time-display');
@@ -693,7 +707,7 @@
             });
         }
         
-        // 단계 이동 함수
+        // ==================== 단계 이동 함수 ====================
         function goToStep(step) {
             if (step === 2) {
                 if (!reservationData.date) {
@@ -732,7 +746,7 @@
             }
         }
         
-        // 2단계 유효성 검사 (단순화됨)
+        // ==================== 2단계 유효성 검사 ====================
         function validateStep2() {
             const requiredFields = [
                 { id: 'student-name', name: '학생 이름' },
@@ -776,10 +790,11 @@
             reservationData.contactTime = document.getElementById('contact-time').value;
             reservationData.specialRequest = document.getElementById('special-request').value;
             
+            console.log('✅ 2단계 데이터 저장 완료:', reservationData);
             return true;
         }
         
-        // 예약 요약 업데이트
+        // ==================== 예약 요약 업데이트 ====================
         function updateReservationSummary() {
             const summaryContent = document.getElementById('reservation-summary-content');
             
@@ -828,15 +843,15 @@
             summaryContent.innerHTML = html;
         }
         
-        // Formspree로 예약 데이터 전송 (수정된 버전)
+        // ==================== Formspree로 예약 데이터 전송 (수정됨) ====================
         async function submitReservation() {
+            console.log('🚀 ===== submitReservation() 시작 =====');
+            
             // 버튼 상태 저장
             const submitBtn = document.getElementById('complete-reservation-btn');
             const originalText = submitBtn.innerHTML;
             
             try {
-                console.log('🟡 1. 예약 완료 버튼 클릭됨 - submitReservation() 함수 시작');
-                
                 // 버튼 로딩 상태로 변경
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 처리 중...';
@@ -848,101 +863,59 @@
                     new Date().getDate().toString().padStart(2, '0') +
                     Math.floor(Math.random() * 1000).toString().padStart(3, '0');
                 
-                console.log('🟡 2. 예약번호 생성 완료:', currentReservationId);
-                console.log('🟡 3. Formspree로 데이터 전송 시작...');
-                console.log('🟡 4. 수신 이메일:', reservationData.parentEmail);
+                console.log('📝 1. 예약번호 생성:', currentReservationId);
+                console.log('📧 2. 보호자 이메일:', reservationData.parentEmail);
                 
-                // Formspree에 데이터 전송
+                // FormData 생성
                 const formData = new FormData();
                 
-                // Formspree 기본 필드 (중요: 이메일 발송을 위한 필드)
-                formData.append('_subject', `[더베스트어학원] ${reservationData.studentName}님 학습 상담 예약 완료 (예약번호: ${currentReservationId})`);
-                formData.append('_replyto', reservationData.parentEmail); // 중요: 이메일 발송 대상
-                formData.append('_cc', 'yonseidaniel@naver.com'); // 학원 이메일로도 복사본 발송
+                // ===== 핵심: Formspree가 인식하는 필드들 =====
+                
+                // 1. email 필드 (Formspree가 Auto-Reply를 보내기 위한 필드) - 가장 중요!
+                formData.append('email', reservationData.parentEmail);
+                console.log('✅ email 필드 추가됨:', reservationData.parentEmail);
+                
+                // 2. subject 필드 (이메일 제목)
+                const subjectValue = `[더베스트어학원] ${reservationData.studentName}님 학습 상담 예약 완료`;
+                formData.append('subject', subjectValue);
+                formData.append('_subject', subjectValue); // _subject도 추가
+                console.log('✅ subject 필드 추가됨:', subjectValue);
+                
+                // 3. _replyto 필드 (회신 주소)
+                formData.append('_replyto', reservationData.parentEmail);
+                console.log('✅ _replyto 필드 추가됨:', reservationData.parentEmail);
+                
+                // 4. 기타 설정
                 formData.append('_language', 'ko');
                 formData.append('_format', 'plain');
                 
-                // 예약 정보 필드
+                // ===== 예약 정보 필드들 (Formspree 대시보드에서 보기 위한) =====
                 formData.append('예약번호', currentReservationId);
-                formData.append('예약유형', '학습 상담');
                 formData.append('학생이름', reservationData.studentName);
                 formData.append('보호자이름', reservationData.parentName);
                 formData.append('연락처', reservationData.parentPhone);
-                formData.append('보호자이메일', reservationData.parentEmail); // 추가: 명시적으로 이메일 필드
+                formData.append('보호자이메일', reservationData.parentEmail); // 백업용
                 formData.append('예약날짜', reservationData.date);
                 formData.append('예약시간', reservationData.time);
-                formData.append('연락가능시간', reservationData.contactTime || '미지정');
-                formData.append('특별요청사항', reservationData.specialRequest || '없음');
                 
-                // 메시지 본문 (이메일 내용) - HTML 형식으로 개선
-                const message = `
-<strong>더베스트 어학원 학습 상담 예약이 접수되었습니다.</strong>
-
-<table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
-  <tr>
-    <td style="padding: 10px; border: 1px solid #ddd; background-color: #f8f9fa; font-weight: bold;">예약번호</td>
-    <td style="padding: 10px; border: 1px solid #ddd;">${currentReservationId}</td>
-  </tr>
-  <tr>
-    <td style="padding: 10px; border: 1px solid #ddd; background-color: #f8f9fa; font-weight: bold;">예약유형</td>
-    <td style="padding: 10px; border: 1px solid #ddd;">학습 상담</td>
-  </tr>
-  <tr>
-    <td style="padding: 10px; border: 1px solid #ddd; background-color: #f8f9fa; font-weight: bold;">예약일시</td>
-    <td style="padding: 10px; border: 1px solid #ddd;">${reservationData.date} ${reservationData.time}</td>
-  </tr>
-  <tr>
-    <td style="padding: 10px; border: 1px solid #ddd; background-color: #f8f9fa; font-weight: bold;">학생 이름</td>
-    <td style="padding: 10px; border: 1px solid #ddd;">${reservationData.studentName}</td>
-  </tr>
-  <tr>
-    <td style="padding: 10px; border: 1px solid #ddd; background-color: #f8f9fa; font-weight: bold;">보호자 이름</td>
-    <td style="padding: 10px; border: 1px solid #ddd;">${reservationData.parentName}</td>
-  </tr>
-  <tr>
-    <td style="padding: 10px; border: 1px solid #ddd; background-color: #f8f9fa; font-weight: bold;">연락처</td>
-    <td style="padding: 10px; border: 1px solid #ddd;">${reservationData.parentPhone}</td>
-  </tr>
-  <tr>
-    <td style="padding: 10px; border: 1px solid #ddd; background-color: #f8f9fa; font-weight: bold;">이메일</td>
-    <td style="padding: 10px; border: 1px solid #ddd;">${reservationData.parentEmail}</td>
-  </tr>
-  <tr>
-    <td style="padding: 10px; border: 1px solid #ddd; background-color: #f8f9fa; font-weight: bold;">연락 가능 시간</td>
-    <td style="padding: 10px; border: 1px solid #ddd;">${reservationData.contactTime || '미지정'}</td>
-  </tr>
-  <tr>
-    <td style="padding: 10px; border: 1px solid #ddd; background-color: #f8f9fa; font-weight: bold;">특별 요청사항</td>
-    <td style="padding: 10px; border: 1px solid #ddd;">${reservationData.specialRequest || '없음'}</td>
-  </tr>
-</table>
-
-<hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-
-<p style="font-size: 14px; color: #666;">
-  <strong>더베스트 어학원</strong><br>
-  문의전화: 032-252-9600<br>
-  이메일: yonseidaniel@naver.com<br>
-  주소: 인천 연수구 컨벤시아대로 230번길 42 아라프라자 2층 207-1
-</p>
-
-<p style="font-size: 12px; color: #999; margin-top: 20px;">
-  ※ 본 이메일은 발신전용입니다.<br>
-  ※ 예약 변경 및 취소는 고객센터(032-252-9600)로 문의해주세요.
-</p>
-                `;
+                if (reservationData.contactTime) {
+                    formData.append('연락가능시간', reservationData.contactTime);
+                }
                 
-                formData.append('message', message);
+                if (reservationData.specialRequest) {
+                    formData.append('특별요청사항', reservationData.specialRequest);
+                }
                 
-                console.log('🟡 5. FormData 준비 완료:', {
-                    _subject: formData.get('_subject'),
-                    _replyto: formData.get('_replyto'),
-                    보호자이메일: formData.get('보호자이메일')
-                });
+                // 디버깅: FormData 내용 확인
+                console.log('📋 3. FormData 내용:');
+                for (let [key, value] of formData.entries()) {
+                    console.log(`   ${key}:`, value);
+                }
                 
-                console.log('🟡 6. Formspree 요청 전송 중...');
+                console.log('🌐 4. Formspree 전송 시작...');
+                console.log('   엔드포인트:', FORMSPREE_ENDPOINT);
                 
-                // Formspree에 POST 요청 보내기
+                // Formspree 전송
                 const response = await fetch(FORMSPREE_ENDPOINT, {
                     method: 'POST',
                     body: formData,
@@ -951,11 +924,11 @@
                     }
                 });
                 
-                console.log('🟡 7. Formspree 응답 수신:', response.status, response.statusText);
+                console.log('📥 5. 응답 수신:', response.status, response.statusText);
                 
                 if (response.ok) {
                     const result = await response.json();
-                    console.log('✅ 8. Formspree 전송 성공:', result);
+                    console.log('✅ 6. Formspree 전송 성공:', result);
                     
                     // 로컬스토리지에 저장 (백업)
                     const reservationWithId = {
@@ -967,6 +940,8 @@
                     const reservations = JSON.parse(localStorage.getItem('academy_reservations') || '[]');
                     reservations.push(reservationWithId);
                     localStorage.setItem('academy_reservations', JSON.stringify(reservations));
+                    
+                    console.log('💾 7. 로컬스토리지 저장 완료');
                     
                     // 성공 모달 표시
                     document.getElementById('success-message').innerHTML = `
@@ -985,13 +960,13 @@
                     
                     document.getElementById('success-modal').style.display = 'flex';
                     
-                    console.log('✅ 9. 성공 모달 표시 완료');
+                    console.log('🎉 8. 성공 모달 표시 완료');
                     
                 } else {
                     const errorText = await response.text();
-                    console.error('❌ 8. Formspree 전송 실패:', response.status, errorText);
+                    console.error('❌ 6. Formspree 전송 실패:', response.status, errorText);
                     
-                    // 성공 모달 표시 (Formspree 오류에도 사용자에게는 성공으로 표시)
+                    // 사용자에게는 성공으로 표시하되, 이메일 문제 알림
                     document.getElementById('success-message').innerHTML = `
                         <strong>예약번호: ${currentReservationId}</strong><br><br>
                         <strong>${reservationData.parentName}님의 학습 상담 예약이 접수되었습니다!</strong><br><br>
@@ -1008,9 +983,9 @@
                 }
                 
             } catch (error) {
-                console.error('❌ 7. 예약 처리 중 오류:', error);
+                console.error('🚨 5. 네트워크 오류:', error);
                 
-                // 오류가 발생해도 사용자에게는 성공으로 표시
+                // 네트워크 오류 발생 시에도 사용자에게는 성공으로 표시
                 document.getElementById('success-message').innerHTML = `
                     <strong>${reservationData.parentName}님의 학습 상담 예약이 접수되었습니다!</strong><br><br>
                     예약일시: ${reservationData.date} ${reservationData.time}<br>
@@ -1028,18 +1003,18 @@
                 // 버튼 상태 복원
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
-                console.log('🟡 10. submitReservation() 함수 종료');
+                console.log('🏁 ===== submitReservation() 종료 =====');
             }
         }
         
-        // 취소 함수
+        // ==================== 취소 함수 ====================
         function cancelReservation() {
             if (confirm('예약을 취소하고 메인 페이지로 이동하시겠습니까?\n입력한 내용은 저장되지 않습니다.')) {
                 window.location.href = 'index.html';
             }
         }
         
-        // 성공 모달 관련 함수
+        // ==================== 성공 모달 관련 함수 ====================
         function goToHome() {
             window.location.href = 'index.html';
         }
@@ -1048,15 +1023,13 @@
             window.location.href = 'my_reservations.html';
         }
         
-        // Formspree 테스트 함수
+        // ==================== Formspree 테스트 함수 ====================
         function testFormspree() {
             console.log('🔍 Formspree 테스트 시작...');
             
             const testFormData = new FormData();
-            testFormData.append('_subject', '[테스트] Formspree 연결 테스트');
-            testFormData.append('_replyto', 'test@example.com');
-            testFormData.append('_language', 'ko');
-            testFormData.append('test', 'Formspree 연결 테스트 메시지');
+            testFormData.append('email', 'test@example.com');
+            testFormData.append('subject', '[테스트] Formspree 연결 테스트');
             testFormData.append('message', '이 메시지는 Formspree 연결 테스트를 위해 전송되었습니다.\n\n전송 시간: ' + new Date().toLocaleString('ko-KR'));
             
             fetch(FORMSPREE_ENDPOINT, {
@@ -1085,4 +1058,4 @@
         }
     </script>
 </body>
-</htm
+</html>
